@@ -1,56 +1,30 @@
 <?php
 session_start();
-include 'database/connect_db.php'; // Database connection
-
-$error = ""; // Variable to store error message
+include 'database/connect_db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = strtolower(trim($_POST['username'])); // Convert username to lowercase
-    $password = trim($_POST['password']); 
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $password = $_POST['password'];
 
-    if (empty($username) || empty($password)) {
-        $error = "⚠️ Please enter both username and password.";
-    } else {
-        // Query to check if the user exists (case-insensitive)
-        $query = "SELECT * FROM accounts WHERE LOWER(username) = ?";
-        $stmt = $conn->prepare($query);
+    $query = "SELECT * FROM accounts WHERE username='$username'";
+    $result = mysqli_query($conn, $query);
+    $user = mysqli_fetch_assoc($result);
 
-        if ($stmt) {
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $result = $stmt->get_result();
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['role'];
 
-            if ($result->num_rows == 1) {
-                $row = $result->fetch_assoc();
-
-                // Verify password
-                if (password_verify($password, $row['password'])) {
-                    $_SESSION['username'] = $username;
-                    $_SESSION['role'] = $row['role'];
-
-                    // Redirect based on role
-                    if ($row['role'] == 'A') {
-                        header("Location: admin/admin_dashboard.php");
-                    } elseif ($row['role'] == 'U') {
-                        header("Location: user/user_dashboard.php");
-                    } else {
-                        header("Location: index.php");
-                    }
-                    exit();
-                } else {
-                    $error = "❌ Incorrect password. Please try again.";
-                }
-            } else {
-                $error = "❌ Username not found. Please check and try again.";
-            }
-            $stmt->close();
+        if ($user['role'] == 'A') {
+            header("Location: admin_dashboard.php");
         } else {
-            $error = "⚠️ Database connection error. Please try again later.";
+            header("Location: user_dashboard.php");
         }
+        exit();
+    } else {
+        echo "Invalid credentials.";
     }
 }
 ?>
-
 
 
 
