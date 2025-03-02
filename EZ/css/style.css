@@ -1,0 +1,138 @@
+/* Body and General Styles */
+body {
+    background-color: #662917;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Main Content Area */
+.main-container {
+    min-height: 100vh;
+    display: flex;
+}
+
+/* Left Side - Image Section */
+.left-side {
+    background: url("../images/bar-interior.jpg") no-repeat center center/cover;
+    width: 50%;
+    min-height: 100vh;
+}
+
+/* Right Side - Login Form */
+.right-side {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #E3B779;
+}
+
+/* Login Card */
+.login-card {
+    background: white;
+    padding: 40px;
+    max-width: 450px;
+    width: 90%;
+    margin-bottom: 100px;
+    border-radius: 12px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #994D2B;
+    border: none;
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+}
+
+.btn-primary:hover {
+    background-color: #7A3A1F;
+}
+
+/* Guest Button */
+.btn-secondary {
+    width: 100%;
+    margin-top: 12px;
+    background-color: #666;
+    border: none;
+    padding: 12px;
+    font-size: 18px;
+}
+
+.btn-secondary:hover {
+    background-color: #444;
+}
+
+/* Form Heading */
+.login-card h3 {
+    text-align: center;
+    color: black;
+    font-size: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .main-container {
+        flex-direction: column;
+    }
+    .left-side, .right-side {
+        width: 100%;
+    }
+    .left-side {
+        height: 40vh;
+    }
+    .right-side {
+        height: 60vh;
+    }
+}
+
+
+p {
+    color: black;
+}
+
+.navbar {
+    height: 70px;
+}
+
+
+.navbar-nav {
+    gap: 15px; 
+}
+
+.navbar-nav .nav-link {
+    border-radius: 8px; 
+    padding: 10px 16px; 
+    font-size: 18px; 
+    font-weight: 600; 
+    letter-spacing: 0.5px; 
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+
+.navbar-nav .nav-link:hover {
+    background-color: purple !important; /* Purple hover effect */
+    color: white !important; /* White text */
+}
+
+.register-card {
+    background: white;
+    padding: 40px;
+    max-width: 400px; /* Adjusted width for better proportion */
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+    margin-left: 600px;
+    margin-top: 70px;
+}
+
+.sign-up-text{
+    color: black;
+    text-align: center;
+    margin-bottom: 20px;
+}
+

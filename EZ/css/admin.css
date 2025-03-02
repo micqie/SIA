@@ -1,0 +1,92 @@
+body {
+    background-color: #662917;
+    margin: 0;
+    padding: 0;
+}
+
+/* Top Navigation Bar */
+.top-nav {
+    width: 100%;
+    background: linear-gradient(to right, #ffffff, #f0f0f0); /* Smooth gradient */
+    padding: 10px 20px; /* Balanced padding */
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.15);
+    border-bottom: 2px solid #ddd;
+    z-index: 1000;
+    height: 60px;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Proper spacing */
+}
+
+/* Header Text */
+.top-nav h1 {
+    font-size: 22px; /* Slightly larger */
+    margin: 0;
+    padding-left: 20px;
+    font-weight: bold;
+    color: #333; /* Darker for contrast */
+}
+
+/* Optional: Logo/Icon */
+.nav-logo {
+    width: 40px; /* Small logo */
+    height: 40px;
+    margin-left: 10px;
+}
+
+
+
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background: #E3B779;
+    height: calc(100vh - 60px); /* Adjust for navbar */
+    padding: 20px;
+    position: fixed;
+    top: 60px; /* Align with navbar */
+    left: 0;
+    overflow-y: auto; /* Enable scrolling if needed */
+}
+
+.sidebar a {
+    display: block;
+    padding: 10px;
+    margin: 10px 0;
+    background: #C4A484;
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    color: black;
+    border-radius: 5px;
+}
+
+.sidebar a.logout {
+    background: #B22222;
+    color: white;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 270px; /* Matches sidebar width */
+    margin-top: 60px; /* Align with navbar */
+    padding: 20px;
+    background: #9B5D42;
+    height: calc(100vh - 60px); /* Adjusted for navbar */
+    overflow-y: auto; /* Scroll if content overflows */
+}
+
+/* Dashboard Card */
+.dashboard-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+
