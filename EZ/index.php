@@ -41,33 +41,69 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        body {
+            overflow-y: auto;
+            height: 100vh;
+        }
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .left-side {
+            flex: 1;
+            background: url('images/login-bg.jpg') no-repeat center center;
+            background-size: cover;
+        }
+        .right-side {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            border-radius: 8px;
+        }
+        .section {
+            padding: 60px 0;
+            text-align: center;
+        }
+        .social-icons a {
+            margin: 0 10px;
+            font-size: 24px;
+        }
+    </style>
 </head>
+
 <body>
-
-<!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="#">EZ Leather Bar</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">About us</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Contact us</a></li>
-            </ul>
+    
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">EZ Leather Bar</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#about">About us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact us</a></li>
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
-
-<!-- Main Content -->
-<div class="main-container">
-    <!-- Left Side: Image -->
-    <div class="left-side"></div>
-
-    <!-- Right Side: Login Form -->
-    <div class="right-side">
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="left-side"></div>
+        <div class="right-side">
         <div class="login-card">
             <h3 class="text-center mb-4">LOGIN</h3>
             <form method="POST" action="">
@@ -88,7 +124,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <p class="text-center mt-3">Don’t have an account? <a href="sign_up.php">Sign Up</a></p>
         </div>
     </div>
-</div>
+    </div>
+
+    <!-- About Us Section -->
+    <section id="about" class="section bg-light">
+        <div class="container">
+            <h2>About Us</h2>
+            <p>EZ Leather Bar specializes in high-quality handcrafted leather products. We take pride in offering premium leather accessories with exquisite designs.</p>
+            <img src="images/about-us.jpg" class="img-fluid rounded" alt="About Us">
+        </div>
+    </section>
+
+    <!-- Contact Us Section -->
+    <section id="contact" class="section">
+        <div class="container">
+            <h2>Contact Us</h2>
+            <p>Have questions? Reach out to us on our social media platforms or send us an email.</p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 bg-dark text-light">
+        <p>&copy; 2025 EZ Leather Bar. All rights reserved.</p>
+    </footer>
+    
+    <!-- Font Awesome for Icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
 
 </body>
 </html>

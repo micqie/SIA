@@ -12,18 +12,14 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'U') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             background-color: #f4f4f4;
-            margin: 0;
-        }
-        .container {
             text-align: center;
+            padding: 20px;
         }
         .grid {
             display: grid;
@@ -54,26 +50,61 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'U') {
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Store Dashboard</h2>
-        <div class="grid">
-            <div class="product" onclick="location.href='order.html?product=1'">
-                <img src="product1.jpg" alt="Product 1">
-                <h3>Product 1</h3>
-            </div>
-            <div class="product" onclick="location.href='order.html?product=2'">
-                <img src="product2.jpg" alt="Product 2">
-                <h3>Product 2</h3>
-            </div>
-            <div class="product" onclick="location.href='order.html?product=3'">
-                <img src="product3.jpg" alt="Product 3">
-                <h3>Product 3</h3>
-            </div>
-            <div class="product" onclick="location.href='order.html?product=4'">
-                <img src="product4.jpg" alt="Product 4">
-                <h3>Product 4</h3>
+    <h2>Store Dashboard</h2>
+    <div class="grid">
+        <div class="product" onclick="openModal('Product 1')">
+            <img src="product1.jpg" alt="Product 1">
+            <h3>Product 1</h3>
+        </div>
+        <div class="product" onclick="openModal('Product 2')">
+            <img src="product2.jpg" alt="Product 2">
+            <h3>Product 2</h3>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="orderModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productTitle">Select Quantity</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label>White:</label>
+                    <input type="number" id="whiteQty" class="form-control" min="0" value="0">
+                    <label>Black:</label>
+                    <input type="number" id="blackQty" class="form-control" min="0" value="0">
+                    <label>Total Quantity:</label>
+                    <input type="number" id="totalQty" class="form-control" min="1" value="200">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="confirmOrder()">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function openModal(productName) {
+            document.getElementById('productTitle').innerText = productName;
+            var myModal = new bootstrap.Modal(document.getElementById('orderModal'));
+            myModal.show();
+        }
+
+        function confirmOrder() {
+            let white = parseInt(document.getElementById('whiteQty').value) || 0;
+            let black = parseInt(document.getElementById('blackQty').value) || 0;
+            let total = parseInt(document.getElementById('totalQty').value);
+
+            if (white + black !== total) {
+                alert("Total quantity must be " + total + " items.");
+                return;
+            }
+
+            alert("Order Confirmed: " + white + " White, " + black + " Black.");
+        }
+    </script>
 </body>
 </html>
