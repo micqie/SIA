@@ -2,6 +2,8 @@
 session_start();
 include 'database/connect_db.php';
 
+$error = ""; // Initialize error message
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
@@ -15,17 +17,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['role'] = $user['role'];
 
         if ($user['role'] == 'A') {
-            header("Location: admin_dashboard.php");
+            header("Location: admin/admin_dashboard.php"); // Redirect to admin page
         } else {
-            header("Location: user_dashboard.php");
+            header("Location: user/user_dashboard.php"); // Redirect to user page
         }
         exit();
-    } else {
-        echo "Invalid credentials.";
+  
     }
 }
 ?>
-
 
 
 <!DOCTYPE html>
