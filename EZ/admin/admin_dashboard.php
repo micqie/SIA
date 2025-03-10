@@ -1,10 +1,11 @@
 <?php
 session_start();
-if (!isset($_SESSION['username']) || $_SESSION['role'] != 'A') {
-    header("Location: index.php"); // Redirect if not admin
+if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'A') {
+    header("Location: ../index.php"); // Redirect if not admin
     exit();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
