@@ -133,16 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background-color:rgba(224, 179, 0, 0.63);
             color: white;
         }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+  
         .section {
             padding: 60px 0;
             text-align: center;
@@ -151,21 +142,83 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin: 0 10px;
             font-size: 24px;
         }
-        .register-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
-            margin: auto;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .register-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
+        @keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.register-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    margin: auto;
+    color: white;
+    animation: fadeInDown 1s ease-in-out; /* Apply fade-in-down effect */
+}
+
+.register-card h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.register-card input {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+}
+
+.register-card input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.register-card input:focus {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.register-card .btn-primary {
+    background-color: #ffc107;
+    color: black;
+    font-size: 1.1rem;
+    border-radius: 30px;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.register-card .btn-primary:hover {
+    background-color: rgba(224, 179, 0, 0.63);
+    color: white;
+}
+
+.register-card p {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.register-card p a {
+    color: rgb(249, 253, 255);
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.3s;
+    background-color: rgb(30, 70, 231);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.register-card p a:hover {
+    background-color: rgb(20, 50, 200);
+}
     </style>
 </head>
 <body>
@@ -183,10 +236,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <a class="nav-link active" href="#home">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#about">About Us</a>
+                    <a class="nav-link" href="#about">About us</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#contact">Contact Us</a>
+                    <a class="nav-link" href="#contact">Contact us</a>
                 </li>
             </ul>
         </div>
@@ -199,27 +252,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="overlay"></div>
     </div>
     <div class="right-side">
-        <div class="register-card">
-            <h3 class="sign-up-text">SIGN UP</h3>
+    <div class="register-card">
+                    <h3 class="sign-up-text">SIGN UP</h3>
 
-            <form action="" method="post">
-                <div class="mb-3">
-                    <input type="text" name="full_name" class="form-control" placeholder="Full Name" required>
-                </div>
-                <div class="mb-3">
-                    <input type="email" name="email" class="form-control" placeholder="Email Address" required>
-                </div>
-                <div class="mb-3">
-                    <input type="password" name="password" class="form-control" placeholder="Password" required>
-                </div>
-                <div class="mb-3">
-                    <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">SIGN UP</button>
-            </form>
+                    <form action="" method="post">
+                        <div class="mb-3">
+                            <input type="text" name="full_name" class="form-control" placeholder="Full Name" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" name="email" class="form-control" placeholder="Email Address" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" name="password" class="form-control" placeholder="Password" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">SIGN UP</button>
+                    </form>
 
-            <p class="text-center mt-3">Already have an account? <a href="login.php">Login</a></p>
-        </div>
+                    <p class="text-center mt-3">Already have an account? <a href="login.php">Login</a></p>
+                </div>
     </div>
 </div>
 

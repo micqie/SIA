@@ -135,13 +135,13 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#home">Home</a>
+                    <a class="nav-link  "   style="margin-right: 60px;" href="#home">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#about">About Us</a>
+                    <a class="nav-link"  style="margin-right: 70px;"  href="#about">About Us</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#contact">Contact Us</a>
+                    <a class="nav-link"  style="margin-right: 80px; " href="#contact">Contact Us</a>
                 </li>
             </ul>
         </div>
@@ -155,7 +155,7 @@
             <div class="hero-section">
                 <div class="hero-text">
                     <h1>Welcome to EZ Leather Bar</h1>
-                    <p style="color: #f9e046;">Premium Leather Keychains & Bag Tags - Crafted Just for You</p>
+                    <p style="color: #f9e046;">Premium Personalized Leathers - Crafted Just for You!</p>
                     <div class="buttons">
                         <a href="login.php" class="btn btn-custom">Get Started</a>  
                         <a href="guest.php" class="btn btn-custom">Guest</a>

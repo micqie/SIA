@@ -159,31 +159,105 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-size: 24px;
         }
         .login-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
-            margin: auto;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .login-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    margin: auto;
+    color: white;
+    animation: fadeInDown 0.8s ease-in-out; /* Apply the fade-in-down animation */
+}
+
+    .login-card h3 {
+        color: white;
+        font-weight: bold;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    .login-card input {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        width: 100%;
+        margin-bottom: 15px;
+        transition: 0.3s;
+    }
+
+    .login-card input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .login-card input:focus {
+        background: rgba(255, 255, 255, 0.3);
+        outline: none;
+    }
+
+    .login-card .btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+        font-weight: bold;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+    .btn-login {
+        background: #ffc107;
+        color: black;
+    }
+
+    .btn-login:hover {
+        background: rgba(224, 179, 0, 0.8);
+        color: white;
+    }
+
+    .btn-guest {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-guest:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .signup-text {
+        color: white;
+        font-size: 1rem;
+        margin-top: 15px;
+    }
+
+    .signup-text a {
+        color: #ffc107;
+        font-weight: bold;
+        text-decoration: none;
+        transition: 0.3s;
+        padding: 8px 15px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+    }
+
+    .signup-text a:hover {
+        background: #ffc107;
+        color: black;
+    }
         
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    @keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
  
     </style>
 </head>
@@ -209,28 +283,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="overlay"></div>
         </div>
         <div class="right-side">
-            <div class="login-card">
-                <h3 class="text-center mb-4" style="color: white;">LOGIN</h3>
-                <?php if (!empty($error)): ?>
-                    <div class="alert alert-danger text-center"> <?php echo $error; ?> </div>
-                <?php endif; ?>
-                <form method="POST">
-                    <div class="mb-3">
-                        <input type="text" class="form-control" name="username" placeholder="Enter your username" required>
-                    </div>
-                    <div class="mb-3">
-                        <input type="password" class="form-control" name="password" placeholder="Enter your password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">LOGIN</button>
-                    <button type="button" class="btn btn-secondary w-100 mt-2">Guest</button>
-                </form>
-                <p class="text-center mt-3" style="text-align: center; margin-top: 1rem; font-size: 1rem; color: white;">
-    Don’t have an account? 
-    <a href="sign_up.php" style="color:rgb(249, 253, 255); font-weight: bold; text-decoration: none; transition: color 0.3s; background-color:rgb(30, 70, 231); padding: 10px; border-radius: 5px;">
-        Sign Up
-    </a>
-</p>
-            </div>
+        <div class="login-card">
+    <h3>Welcome Back</h3>
+    <?php if (!empty($error)): ?>
+        <div class="alert alert-danger text-center"> <?php echo $error; ?> </div>
+    <?php endif; ?>
+    <form method="POST">
+        <input type="text" name="username" placeholder="Enter your username" required>
+        <input type="password" name="password" placeholder="Enter your password" required>
+        <button type="submit" class="btn btn-login">LOGIN</button>
+        <button type="button" class="btn btn-guest mt-2">Continue as Guest</button>
+    </form>
+    <p class="signup-text">Don't have an account?  
+        <a href="sign_up.php">Sign Up</a>
+    </p>
+</div>
         </div>
     </div>
     
