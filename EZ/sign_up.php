@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: flex;
             min-height: 100vh;
             width: 100%;
-            padding-top: 80px;
+            padding-top: 100px;
         }
 
         .left-side {
@@ -289,47 +289,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .navbar {
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(10px);
-            padding: 15px 0;
+            padding: 20px 0;
             transition: all 0.3s ease;
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .navbar-brand {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             color: #000 !important;
             font-weight: 700;
             transition: all 0.3s ease;
+            padding: 0 15px;
         }
 
-        .navbar-brand:hover {
-            color: #ffc107 !important;
+        .navbar-brand i {
+            font-size: 1.6rem;
+            margin-right: 10px;
         }
 
         .nav-link {
             color: #000 !important;
-            font-weight: 500;
-            padding: 8px 15px !important;
-            margin: 0 5px;
-            border-radius: 5px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 12px 20px !important;
+            margin: 0 8px;
+            border-radius: 8px;
             transition: all 0.3s ease;
         }
 
-        .nav-link:hover {
-            color: #ffc107 !important;
-            background: rgba(255, 193, 7, 0.1);
+        .nav-link i {
+            font-size: 1.1rem;
+            margin-right: 8px;
         }
 
-        .navbar-toggler {
-            border: none;
-            padding: 0.5rem;
-        }
-
-        .navbar-toggler:focus {
-            box-shadow: none;
-            outline: none;
+        .navbar-nav {
+            gap: 10px;
         }
     </style>
 </head>
