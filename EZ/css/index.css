@@ -56,6 +56,7 @@ margin-bottom: 30px;
     flex: 1;
     background: url('images/login-bg.jpg') no-repeat center center;
     background-size: cover;
+
 }
 .right-side {
     flex: 1;
@@ -65,6 +66,7 @@ margin-bottom: 30px;
     padding: 20px;
 }
 .login-card {
+    margin-top: 10%;
     width: 100%;
     max-width: 400px;
     padding: 20px;

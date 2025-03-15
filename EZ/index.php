@@ -123,30 +123,85 @@
             margin: 0 10px;
             font-size: 24px;
         }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            transition: all 0.3s ease;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            color: #000 !important;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            padding: 0 15px;
+        }
+
+        .navbar-brand i {
+            font-size: 1.6rem;
+            margin-right: 10px;
+        }
+
+        .nav-link {
+            color: #000 !important;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 12px 20px !important;
+            margin: 0 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+            margin-right: 8px;
+        }
+
+        .navbar-nav {
+            gap: 10px;
+        }
+
+        .main-container {
+            padding-top: 100px;
+        }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm fixed-top">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="#">EZ Leather Bar</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link  "   style="margin-right: 60px;" href="#home">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link"  style="margin-right: 70px;"  href="#about">About Us</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link"  style="margin-right: 80px; " href="#contact">Contact Us</a>
-                </li>
-            </ul>
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="index.php">
+                <i class="fas fa-store-alt me-2"></i>EZ Leather Bar
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">
+                            <i class="fas fa-info-circle me-1"></i>About
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">
+                            <i class="fas fa-envelope me-1"></i>Contact
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
 <div class="main-container">
     <div class="left-side" >

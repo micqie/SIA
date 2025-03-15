@@ -191,8 +191,8 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'A') {
         <div class="profile-menu">
     <div class="profile-icon" onclick="toggleDropdown()">A</div> <!-- You can replace this with an image -->
     <div class="dropdown-menu" id="profileDropdown">
-        <a href="profile.php">Profile</a>
-        <a href="settings.php">Settings</a>
+        <a href="admin_profile.php">Profile</a>
+        <a href="admin_settings.php">Settings</a>
         <a href="logout.php" class="text-danger">Logout</a>
     </div>
 </div>
@@ -200,9 +200,9 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'A') {
 
     <div class="sidebar" id="sidebar">
         <a href="#">DASHBOARD</a>
-        <a href="booking.php">BOOKINGS</a>
-        <a href="stocks.php">STOCKS</a>
-        <a href="reports.php">REPORTS</a>
+        <a href="admin_bookings.php">BOOKINGS</a>
+        <a href="admin_stocks.php">STOCKS</a>
+        <a href="admin_reports.php">REPORTS</a>
 
     </div>
 

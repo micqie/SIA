@@ -13,11 +13,10 @@
             background-color: #f4f4f4;
             margin: 0;
         }
-
         .top-nav {
             background-color: #1E3A8A;
             color: white;
-            padding: 15px;
+            padding: 15px 20px;
             text-align: center;
             font-size: 22px;
             position: fixed;
@@ -27,7 +26,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .top-nav:hover {
+            background-color: #2563eb;
+        }
+
+        .top-nav .brand {
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .top-nav .nav-items {
+            display: flex;
+            gap: 20px;
+            align-items: center;
         }
 
         .sidebar {
