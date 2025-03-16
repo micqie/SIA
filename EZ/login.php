@@ -79,12 +79,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: flex;
             min-height: 100vh;
             width: 100%;
-            padding-top: 100px;
+
         }
 
         .left-side {
             flex: 1;
-
             background: url('assets/bg.png') no-repeat center center;
             background-size: cover;
             position: relative;
@@ -95,6 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .left-content {
+            margin-top: 100px;
             position: relative;
             z-index: 2;
             text-align: left;
@@ -214,6 +214,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .right-side {
+            margin-top: 110px;
             flex: 1;
             display: flex;
             align-items: center;
@@ -224,6 +225,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .login-card {
+
             margin-bottom: 100px;
             background: rgba(255, 255, 255, 0.1);
             padding: 20px;
@@ -449,7 +451,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="text" name="username" placeholder="Enter your username" required>
                     <input type="password" name="password" placeholder="Enter your password" required>
                     <button type="submit" class="btn btn-login">LOGIN</button>
-                    <button type="button" class="btn btn-guest mt-2">Continue as Guest</button>
+                    <button type="button" class="btn btn-guest mt-2" onclick="window.location.href='guest.php'">
+    Continue as Guest
+</button>
                 </form>
                 <p class="signup-text">Don't have an account?  
                     <a href="sign_up.php">Sign Up</a>

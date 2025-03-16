@@ -62,10 +62,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: flex;
             min-height: 100vh;
             width: 100%;
-            padding-top: 100px;
+
         }
 
         .left-side {
+
             flex: 1;
             background: url('assets/bg.png') no-repeat center center;
             background-size: cover;
@@ -77,6 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .left-content {
+            margin
             position: relative;
             z-index: 2;
             text-align: left;
@@ -191,6 +193,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .right-side {
+            margin-top: 100px;
             flex: 1;
             display: flex;
             align-items: center;

@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+
     <link rel="stylesheet" href="css/index.css">
 
     <style>
@@ -33,6 +33,7 @@
 
       
         .main-container {
+
             display: flex;
             min-height: 100vh;
         }
@@ -167,11 +168,10 @@
             gap: 10px;
         }
 
-        .main-container {
-            padding-top: 100px;
-        }
+     
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
         <div class="container">
@@ -227,28 +227,133 @@
     </div>
 </div>
 
-<section id="about" class="section bg-light">
+<!-- About Us Section -->
+<section id="about" class="section" style="background: rgba(0, 0, 0, 0.8); padding: 80px 0;">
     <div class="container">
-        <h2>About Us</h2>
-        <p>EZ Leather Bar specializes in high-quality handcrafted leather products. We take pride in offering premium leather accessories with exquisite designs.</p>
-        <img src="images/about-us.jpg" class="img-fluid rounded" alt="About Us">
-    </div>
-</section>
-
-<section id="contact" class="section">
-    <div class="container">
-        <h2>Contact Us</h2>
-        <p>Have questions? Reach out to us on our social media platforms or send us an email.</p>
-        <div class="social-icons">
-            <a href="#"><i class="fab fa-facebook"></i></a>
-            <a href="#"><i class="fab fa-instagram"></i></a>
-            <a href="#"><i class="fab fa-twitter"></i></a>
+        <h2 class="display-4 mb-5" style="color: #ffc107;">About Us</h2>
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-4">
+                <div class="about-image-container" style="position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <img src="assets/about-leather.jpg" class="img-fluid" alt="Leather Crafting" style="width: 100%; transform: scale(1.02);">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.2);"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="about-content" style="padding: 30px; background: rgba(255,255,255,0.1); border-radius: 20px;">
+                    <h3 style="color: #ffc107; margin-bottom: 20px;">Our Craft & Passion</h3>
+                    <p class="lead" style="color: white; margin-bottom: 20px;">EZ Leather Bar specializes in creating premium quality leather products that combine traditional craftsmanship with modern design.</p>
+                    <div class="features" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="feature" style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                            <i class="fas fa-hand-holding-heart" style="font-size: 2rem; color: #ffc107; margin-bottom: 10px;"></i>
+                            <h5 style="color: white;">Quality Materials</h5>
+                        </div>
+                        <div class="feature" style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                            <i class="fas fa-star" style="font-size: 2rem; color: #ffc107; margin-bottom: 10px;"></i>
+                            <h5 style="color: white;">Expert Crafting</h5>
+                        </div>
+                        <div class="feature" style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                            <i class="fas fa-gem" style="font-size: 2rem; color: #ffc107; margin-bottom: 10px;"></i>
+                            <h5 style="color: white;">Premium Finish</h5>
+                        </div>
+                        <div class="feature" style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                            <i class="fas fa-heart" style="font-size: 2rem; color: #ffc107; margin-bottom: 10px;"></i>
+                            <h5 style="color: white;">Made with Love</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<footer class="text-center py-3 bg-dark text-light">
-    <p>&copy; 2025 EZ Leather Bar. All rights reserved.</p>
+<!-- Contact Section -->
+<section id="contact" class="section" style="background: rgba(0, 0, 0, 0.7); padding: 80px 0;">
+    <div class="container">
+        <h2 class="display-4 mb-5" style="color: #ffc107;">Contact Us</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div style="background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; backdrop-filter: blur(10px);">
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-4">
+                            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;">
+                                <i class="fas fa-map-marker-alt" style="font-size: 2rem; color: #ffc107; margin-bottom: 15px;"></i>
+                                <h4 style="color: white;">Visit Us</h4>
+                                <p style="color: #ddd;">123 Leather Lane<br>Craft District, Manila</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;">
+                                <i class="fas fa-clock" style="font-size: 2rem; color: #ffc107; margin-bottom: 15px;"></i>
+                                <h4 style="color: white;">Business Hours</h4>
+                                <p style="color: #ddd;">Monday - Saturday<br>9:00 AM - 6:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;">
+                                <i class="fas fa-phone" style="font-size: 2rem; color: #ffc107; margin-bottom: 15px;"></i>
+                                <h4 style="color: white;">Call Us</h4>
+                                <p style="color: #ddd;">+63 912 345 6789</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;">
+                                <i class="fas fa-envelope" style="font-size: 2rem; color: #ffc107; margin-bottom: 15px;"></i>
+                                <h4 style="color: white;">Email Us</h4>
+                                <p style="color: #ddd;">info@ezleatherbar.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="social-icons" style="margin-top: 30px;">
+                        <a href="#" style="color: white; font-size: 2rem; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="#" style="color: white; font-size: 2rem; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" style="color: white; font-size: 2rem; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" style="color: white; font-size: 2rem; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
+                            <i class="fab fa-pinterest"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer style="background: rgba(0, 0, 0, 0.9); padding: 50px 0 20px; color: white;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <h3 style="color: #ffc107; margin-bottom: 20px;">EZ Leather Bar</h3>
+                <p style="color: #ddd;">Crafting premium leather products with passion and precision. Your satisfaction is our priority.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <h3 style="color: #ffc107; margin-bottom: 20px;">Quick Links</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 10px;"><a href="#home" style="color: #ddd; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='#ddd'">Home</a></li>
+                    <li style="margin-bottom: 10px;"><a href="#about" style="color: #ddd; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='#ddd'">About Us</a></li>
+                    <li style="margin-bottom: 10px;"><a href="#contact" style="color: #ddd; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='#ddd'">Contact</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4 mb-4">
+                <h3 style="color: #ffc107; margin-bottom: 20px;">Newsletter</h3>
+                <p style="color: #ddd;">Subscribe to our newsletter for updates and exclusive offers.</p>
+                <div class="input-group mt-3">
+                    <input type="email" class="form-control" placeholder="Your Email" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    <button class="btn btn-warning" type="submit">Subscribe</button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <p style="color: #ddd; margin: 0;">&copy; 2024 EZ Leather Bar. All rights reserved.</p>
+        </div>
+    </div>
 </footer>
 
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>

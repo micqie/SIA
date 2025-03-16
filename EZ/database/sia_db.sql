@@ -17,3 +17,5 @@ INSERT INTO `accounts` (`account_id`, `username`, `password`, `role`) VALUES
 
 
 ALTER TABLE `accounts` MODIFY `role` ENUM('U', 'A') NOT NULL DEFAULT 'U';
+
+

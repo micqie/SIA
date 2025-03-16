@@ -18,12 +18,6 @@ body {
     padding: 0;
 }
 
-/* Main Content Area */
-.main-container {
-    min-height: 100vh;
-    display: flex;
-}
-
 /* Left Side - Image Section */
 .left-side {
     background: url("../assets/bg.png") no-repeat center center/cover;
@@ -103,30 +97,6 @@ body {
 
 p {
     color: #f9ff00;
-}
-
-.navbar {
-    height: 70px;
-}
-
-
-.navbar-nav {
-    gap: 15px; 
-}
-
-.navbar-nav .nav-link {
-    border-radius: 8px; 
-    padding: 10px 16px; 
-    font-size: 18px; 
-    font-weight: 600; 
-    letter-spacing: 0.5px; 
-    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
-}
-
-
-.navbar-nav .nav-link:hover {
-    background-color: purple !important; /* Purple hover effect */
-    color: white !important; /* White text */
 }
 
 .register-card {
