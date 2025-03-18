@@ -406,6 +406,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <i class="fas fa-envelope me-1"></i>Contact
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="employee_dashboard.php">
+                            <i class="fas fa-user-tie me-1"></i>Employee
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

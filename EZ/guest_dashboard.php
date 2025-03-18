@@ -11,36 +11,64 @@ if (isset($_SESSION['receipt_data'])) {
     $receipt_data = $_SESSION['receipt_data'];
 }
 
-// Check if reference number is provided
+// Check if reference number is provided and verified
 if (isset($_GET['ref'])) {
     $reference = mysqli_real_escape_string($conn, trim($_GET['ref']));
     
-    // Fetch order details with product information
-    $query = "SELECT b.*, 
-              p.product_name, p.description, p.image_path,
-              gb.guest_name, gb.customization_details
-              FROM bookings b
-              JOIN booking_details bd ON b.booking_id = bd.booking_id
-              JOIN products p ON bd.product_id = p.product_id
-              LEFT JOIN guest_bookings gb ON b.booking_id = gb.booking_id
-              WHERE b.booking_reference = ? OR gb.guest_reference = ?
-              LIMIT 1";
+    // Verify access first
+    $verify_query = "SELECT b.*, gb.guest_reference, gb.guest_name, gb.customization_details
+                     FROM bookings b 
+                     LEFT JOIN guest_bookings gb ON b.booking_id = gb.booking_id 
+                     WHERE b.booking_reference = ? OR gb.guest_reference = ?";
     
-    $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        $error = "System error occurred. Please try again later.";
+    $verify_stmt = $conn->prepare($verify_query);
+    $verify_stmt->bind_param('ss', $reference, $reference);
+    $verify_stmt->execute();
+    $verify_result = $verify_stmt->get_result();
+    
+    if ($verify_result->num_rows === 0) {
+        $error = "Invalid reference number. Please check and try again.";
     } else {
-        $stmt->bind_param('ss', $reference, $reference);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        // Store verified booking info in session
+        $booking_info = $verify_result->fetch_assoc();
+        $_SESSION['guest_booking'] = [
+            'booking_id' => $booking_info['booking_id'],
+            'booking_reference' => $booking_info['booking_reference'],
+            'guest_reference' => $booking_info['guest_reference'],
+            'status' => $booking_info['status']
+        ];
         
-        if ($result && $result->num_rows > 0) {
-            $order = $result->fetch_assoc();
-            $customization = json_decode($order['customization_details'] ?? '{}', true);
+        // Fetch order details with product information
+        $query = "SELECT b.*, 
+                  p.product_name, p.description, p.image_path,
+                  gb.guest_name, gb.customization_details
+                  FROM bookings b
+                  JOIN booking_details bd ON b.booking_id = bd.booking_id
+                  JOIN products p ON bd.product_id = p.product_id
+                  LEFT JOIN guest_bookings gb ON b.booking_id = gb.booking_id
+                  WHERE b.booking_id = ?
+                  LIMIT 1";
+        
+        $stmt = $conn->prepare($query);
+        if (!$stmt) {
+            $error = "System error occurred. Please try again later.";
         } else {
-            $error = "Order not found. Please check your reference number.";
+            $stmt->bind_param('i', $booking_info['booking_id']);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($result && $result->num_rows > 0) {
+                $order = $result->fetch_assoc();
+                $customization = json_decode($order['customization_details'] ?? '{}', true);
+            } else {
+                $error = "Order not found. Please check your reference number.";
+            }
         }
     }
+} else if (!isset($_SESSION['guest_booking'])) {
+    // If no reference number and no verified session, redirect to guest access page
+    header('Location: guest.php');
+    exit();
 }
 ?>
 

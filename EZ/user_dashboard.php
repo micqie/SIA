@@ -395,6 +395,7 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                             <label class="form-label">Preferred Date</label>
                             <input type="date" class="form-control" id="preferredDate" required
                                    min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
+                            <div id="availabilityStatus" class="mt-2"></div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Special Instructions</label>
@@ -640,8 +641,54 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 bookingModal.show();
             });
 
+            // Add this before the bookingForm.addEventListener
+            const preferredDateInput = document.getElementById('preferredDate');
+            const availabilityStatus = document.getElementById('availabilityStatus');
+            let isDateAvailable = false;
+
+            async function checkAvailability(date) {
+                try {
+                    const response = await fetch(`check_availability.php?date=${date}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const availability = data.data;
+                        isDateAvailable = availability.available;
+                        
+                        if (availability.available) {
+                            availabilityStatus.innerHTML = `
+                                <div class="text-success">
+                                    <i class="fas fa-check-circle"></i> Available! ${availability.slots_left} slot(s) left
+                                </div>`;
+                        } else {
+                            availabilityStatus.innerHTML = `
+                                <div class="text-danger">
+                                    <i class="fas fa-times-circle"></i> Fully booked for this date
+                                </div>`;
+                        }
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    console.error('Error checking availability:', error);
+                    availabilityStatus.innerHTML = `
+                        <div class="text-warning">
+                            <i class="fas fa-exclamation-circle"></i> Error checking availability
+                        </div>`;
+                }
+            }
+
+            preferredDateInput.addEventListener('change', function() {
+                checkAvailability(this.value);
+            });
+
             bookingForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                
+                if (!isDateAvailable) {
+                    alert('Please select an available date for your booking.');
+                    return;
+                }
                 
                 const submitButton = this.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
@@ -672,8 +719,8 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     }
 
                     // Validate form data
-                    const preferredDate = document.getElementById('preferredDate').value;
                     const specialInstructions = document.getElementById('specialInstructions').value;
+                    const preferredDate = document.getElementById('preferredDate').value;
 
                     if (!preferredDate) {
                         throw new Error('Please select a preferred date');
