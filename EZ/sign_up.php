@@ -3,28 +3,62 @@ session_start();
 include 'database/connect_db.php'; // Database connection
 
 $success = false; // Variable to track successful registration
+$errors = array();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $full_name = mysqli_real_escape_string($conn, $_POST['full_name']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $username = mysqli_real_escape_string($conn, $_POST['username']); // Add username field
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
 
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid email format";
+    }
+
+    // Validate username (alphanumeric and between 3-50 characters)
+    if (!preg_match('/^[a-zA-Z0-9]{3,50}$/', $username)) {
+        $errors[] = "Username must be between 3-50 characters and contain only letters and numbers";
+    }
+
     // Check if passwords match
     if ($password !== $confirm_password) {
-        echo "<script>alert('Passwords do not match!');</script>";
-    } else {
-        // Hash the password for security
+        $errors[] = "Passwords do not match!";
+    }
+
+    // Check password strength
+    if (strlen($password) < 8 || !preg_match("/[0-9]/", $password) || !preg_match("/[a-zA-Z]/", $password)) {
+        $errors[] = "Password must be at least 8 characters long and contain both letters and numbers";
+    }
+
+    // Check if email already exists
+    $check_email = mysqli_query($conn, "SELECT * FROM accounts WHERE email = '$email'");
+    if (mysqli_num_rows($check_email) > 0) {
+        $errors[] = "Email already registered";
+    }
+
+    // Check if username already exists
+    $check_username = mysqli_query($conn, "SELECT * FROM accounts WHERE username = '$username'");
+    if (mysqli_num_rows($check_username) > 0) {
+        $errors[] = "Username already taken";
+    }
+
+    if (empty($errors)) {
+        // Hash the password
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         $role = "U"; // Default role as User
 
-        $sql = "INSERT INTO accounts (username, password, role) VALUES ('$email', '$hashed_password', '$role')";
+        // Use prepared statement for insertion
+        $stmt = $conn->prepare("INSERT INTO accounts (username, password, email, role) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $username, $hashed_password, $email, $role);
 
-        if (mysqli_query($conn, $sql)) {
-            $success = true; // Registration was successful
+        if ($stmt->execute()) {
+            $success = true;
         } else {
-            echo "<script>alert('Error: " . mysqli_error($conn) . "');</script>";
+            $errors[] = "Registration failed: " . $stmt->error;
         }
+        $stmt->close();
     }
 }
 ?>
@@ -405,12 +439,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="right-side">
             <div class="register-card">
                 <h3>Create Account</h3>
+                <?php if (!empty($errors)): ?>
+                    <div class="alert alert-danger">
+                        <?php foreach ($errors as $error): ?>
+                            <p class="mb-0"><?php echo $error; ?></p>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
                 <form action="" method="post">
                     <div class="mb-3">
-                        <input type="text" name="full_name" class="form-control" placeholder="Full Name" required>
+                        <input type="text" name="full_name" class="form-control" placeholder="Full Name" required 
+                            value="<?php echo isset($_POST['full_name']) ? htmlspecialchars($_POST['full_name']) : ''; ?>">
                     </div>
                     <div class="mb-3">
-                        <input type="email" name="email" class="form-control" placeholder="Email Address" required>
+                        <input type="text" name="username" class="form-control" placeholder="Username" required
+                            value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
+                    </div>
+                    <div class="mb-3">
+                        <input type="email" name="email" class="form-control" placeholder="Email Address" required
+                            value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
                     </div>
                     <div class="mb-3">
                         <input type="password" name="password" class="form-control" placeholder="Password" required>
@@ -435,6 +482,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="modal-body text-center">
                     <h4 class="text-success">Registered Successfully!</h4>
+                    <p>Your account has been created. You can now login with your username and password.</p>
                 </div>
                 <div class="modal-footer">
                     <a href="login.php" class="btn btn-success">Go to Login</a>

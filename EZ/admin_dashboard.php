@@ -1,9 +1,31 @@
 <?php
 session_start();
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'A') {
-    header("Location: ../index.php"); // Redirect if not admin
+require 'database/connect_db.php';
+
+// Check if admin is logged in
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'A') {
+    header("Location: login.php");
     exit();
 }
+
+// Get booking statistics
+$stats_query = "SELECT 
+    COUNT(*) as total_bookings,
+    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_bookings,
+    SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_bookings,
+    SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END) as declined_bookings,
+    SUM(total_amount) as total_revenue
+    FROM bookings";
+$stats_result = mysqli_query($conn, $stats_query);
+$stats = mysqli_fetch_assoc($stats_result);
+
+// Get recent bookings
+$recent_bookings_query = "SELECT b.*, a.username 
+    FROM bookings b
+    LEFT JOIN accounts a ON b.account_id = a.account_id
+    ORDER BY b.created_at DESC LIMIT 5";
+$recent_bookings_result = mysqli_query($conn, $recent_bookings_query);
+$recent_bookings = mysqli_fetch_all($recent_bookings_result, MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -11,470 +33,280 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'A') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - EZ Leather Bar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="css/admin.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: 'Poppins', Arial, sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            min-height: 100vh;
-            color: #2c3e50;
-            overflow-x: hidden;
-            overflow-y: hidden;
-        }
-
-        /* Top Navigation */
-        .top-nav {
-            background: #ffffff;
-            padding: 0 24px;
-            height: 60px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-        }
-
-        .top-nav span {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #2c3e50;
-            letter-spacing: 0.5px;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 250px;
-            position: fixed;
-            top: 60px;
-            left: 0;
-            height: calc(100vh - 60px);
-            background: #9D4D36;
-            padding: 15px 0;
-            transition: 0.3s ease-in-out;
-            border-right: none;
-            overflow-y: auto;
-        }
-
-        .sidebar a {
-            padding: 14px 20px;
-            text-decoration: none;
-            font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.8);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-            margin: 4px 15px;
-            border-radius: 10px;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-            border: 1px solid transparent;
-        }
-
-        .sidebar a i {
-            width: 22px;
-            text-align: center;
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .sidebar a:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            transform: translateX(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar a.active {
-            background: #F8E2A8;
-            color: #9D4D36;
-            font-weight: 600;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border: none;
-        }
-
-        .sidebar a.active i {
-            color: #9D4D36;
-        }
-
-        /* Sidebar Scrollbar */
-        .sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 250px;
-            margin-top: 60px;
-            padding: 20px;
-            background: #F8E2A8;
-            min-height: calc(100vh - 60px);
-        }
-
-        .main-content h2 {
-            color: #2c3e50;
-            margin: 0 0 20px 0;
-            font-size: 1.6rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        /* Dashboard Cards */
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            border: 1px solid #e6e9ed;
-            position: relative;
-            overflow: hidden;
-            height: 100%;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(to right, #3498db, #2980b9);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card h3 {
-            color: #5c6c7c;
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .stat-card p {
-            color: #2c3e50;
-            font-size: 2rem;
-            margin: 0;
-            font-weight: 600;
-            line-height: 1.2;
-        }
-
-        .stat-card .stat-label {
-            color: #8392a5;
-            font-size: 0.9rem;
-            margin-top: 8px;
-            font-weight: 400;
-        }
-
-        /* Chart Container */
-        .chart-container {
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 12px;
-            margin-top: 25px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e6e9ed;
-        }
-
-        .chart-container h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-            font-weight: 500;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e6e9ed;
-        }
-
-        /* Progress Bar */
-        .stat-progress {
-            width: 100%;
-            height: 6px;
-            background: #f0f2f5;
-            border-radius: 3px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
-
-        .stat-progress-bar {
-            height: 100%;
-            background: linear-gradient(to right, #3498db, #2980b9);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-        }
-
-        /* Icons */
-        .stat-card .icon {
-            font-size: 1.2rem;
-            color: #3498db;
-            background: rgba(52, 152, 219, 0.1);
-            padding: 8px;
-            border-radius: 8px;
-        }
-
-        .stocks-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 15px;
-        }
-
-        .stock-item {
-            text-align: center;
-            padding: 10px;
             background: #f8f9fa;
-            border-radius: 8px;
+            font-family: 'Arial', sans-serif;
         }
 
-        .stock-item p {
-            font-size: 1.5rem !important;
-            margin-bottom: 5px;
-        }
-
-        /* Profile Menu */
-        .profile-menu {
-            position: relative;
-        }
-
-        .profile-icon {
-            width: 40px;
-            height: 40px;
-            background-color: #333;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            cursor: pointer;
-            transition: 0.3s ease;
+        .navbar {
+            background: #9D4D36 !important;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        .profile-icon:hover {
-            background-color: #555;
-            transform: scale(1.05);
+        .navbar-brand, .nav-link {
+            color: white !important;
         }
 
-        .dropdown-menu {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 15px;
-            padding: 10px;
-            min-width: 180px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        .main-container {
+            margin-top: 80px;
+            padding: 20px;
         }
 
-        .dropdown-menu a {
-            color: #333;
-            padding: 12px 20px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            margin: 5px 0;
-            font-weight: 500;
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
         }
 
-        .dropdown-menu a:hover {
-            background: rgba(255, 215, 0, 0.1);
-            color: #333;
-            transform: translateX(5px);
+        .stats-card:hover {
+            transform: translateY(-5px);
         }
 
-        .dropdown-menu a.text-danger {
-            color: #dc3545;
+        .stats-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
         }
 
-        .dropdown-menu a.text-danger:hover {
+        .bg-primary-soft {
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+
+        .bg-success-soft {
+            background: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+
+        .bg-warning-soft {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .bg-danger-soft {
             background: rgba(220, 53, 69, 0.1);
             color: #dc3545;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+            height: 400px;
+        }
+
+        .recent-bookings {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .booking-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .booking-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-declined {
+            background: #f8d7da;
+            color: #721c24;
         }
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-store-alt me-2"></i>EZ Leather Bar Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin_bookings.php">
+                            <i class="fas fa-calendar-check me-1"></i>Bookings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="logout.php">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <div class="top-nav">
-     
-        <span>Admin Dashboard</span>
+    <div class="main-container container">
+        <h2 class="mb-4"><i class="fas fa-chart-line me-2"></i>Dashboard Overview</h2>
         
-        <!-- Profile Icon -->
-        <div class="profile-menu">
-    <div class="profile-icon" onclick="toggleDropdown()">A</div> <!-- You can replace this with an image -->
-    <div class="dropdown-menu" id="profileDropdown">
-        <a href="admin_profile.php">Profile</a>
-        <a href="admin_settings.php">Settings</a>
-        <a href="logout.php" class="text-danger">Logout</a>
-    </div>
-</div>
-    </div>
-
-    <div class="sidebar" id="sidebar">
-        <a href="#" class="active"><i class="fas fa-th-large"></i> Dashboard</a>
-        <a href="admin_bookings.php"><i class="fas fa-calendar-alt"></i> Bookings</a>
-        <a href="admin_stocks.php"><i class="fas fa-box"></i> Stocks</a>
-        <a href="admin_reports.php"><i class="fas fa-chart-bar"></i> Reports</a>
-    </div>
-
-    <div class="main-content">
-        <h2>Dashboard Overview</h2>
-        
-        <div class="dashboard-stats">
-            <div class="stat-card">
-                <h3><i class="fas fa-calendar-check icon"></i>Total Bookings</h3>
-                <p>120</p>
-                <div class="stat-label">Last 30 days</div>
-                <div class="stat-progress">
-                    <div class="stat-progress-bar" style="width: 75%"></div>
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon bg-primary-soft">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3><?php echo $stats['total_bookings']; ?></h3>
+                    <p class="text-muted mb-0">Total Bookings</p>
                 </div>
             </div>
-            
-            <div class="stat-card">
-                <h3><i class="fas fa-box icon"></i>Stocks Overview</h3>
-                <div class="stocks-grid">
-                    <div class="stock-item">
-                        <p>50</p>
-                        <div class="stat-label">Leather Items</div>
-                        <div class="stat-progress">
-                            <div class="stat-progress-bar" style="width: 60%"></div>
-                        </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon bg-success-soft">
+                        <i class="fas fa-check-circle"></i>
                     </div>
-                    <div class="stock-item">
-                        <p>30</p>
-                        <div class="stat-label">Perfumes</div>
-                        <div class="stat-progress">
-                            <div class="stat-progress-bar" style="width: 40%"></div>
-                        </div>
-                    </div>
+                    <h3><?php echo $stats['confirmed_bookings']; ?></h3>
+                    <p class="text-muted mb-0">Confirmed Bookings</p>
                 </div>
             </div>
-            
-            <div class="stat-card">
-                <h3><i class="fas fa-file-alt icon"></i>Reports Generated</h3>
-                <p>15</p>
-                <div class="stat-label">This Month</div>
-                <div class="stat-progress">
-                    <div class="stat-progress-bar" style="width: 45%"></div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon bg-warning-soft">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3><?php echo $stats['pending_bookings']; ?></h3>
+                    <p class="text-muted mb-0">Pending Bookings</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon bg-danger-soft">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <h3><?php echo $stats['declined_bookings']; ?></h3>
+                    <p class="text-muted mb-0">Declined Bookings</p>
                 </div>
             </div>
         </div>
 
-        <div class="chart-container">
-            <h3>Booking Trends</h3>
-            <canvas id="chart"></canvas>
+        <div class="row mt-4">
+            <!-- Charts -->
+            <div class="col-md-8">
+                <div class="chart-container">
+                    <h4 class="mb-4">Booking Statistics</h4>
+                    <canvas id="bookingChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Bookings -->
+            <div class="col-md-4">
+                <div class="recent-bookings">
+                    <h4 class="mb-4">Recent Bookings</h4>
+                    <?php foreach ($recent_bookings as $booking): ?>
+                        <div class="booking-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">Booking #<?php echo $booking['booking_id']; ?></h6>
+                                    <p class="mb-1">By: <?php echo htmlspecialchars($booking['username']); ?></p>
+                                    <small class="text-muted">
+                                        <?php echo date('M d, Y', strtotime($booking['created_at'])); ?>
+                                    </small>
+                                </div>
+                                <span class="status-badge status-<?php echo strtolower($booking['status']); ?>">
+                                    <?php echo ucfirst($booking['status']); ?>
+                                </span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="text-center mt-3">
+                        <a href="admin_bookings.php" class="btn btn-sm btn-outline-primary">View All Bookings</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        var ctx = document.getElementById('chart').getContext('2d');
-        var chart = new Chart(ctx, {
-            type: 'line',
+        // Initialize charts
+        const ctx = document.getElementById('bookingChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: ['Confirmed', 'Pending', 'Declined'],
                 datasets: [{
-                    label: 'Bookings',
-                    data: [12, 19, 3, 5, 2, 3, 10, 15, 9, 7, 11, 13],
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    borderColor: '#3498db',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointBackgroundColor: '#3498db',
-                    pointBorderColor: '#3498db',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: '#3498db',
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+                    data: [
+                        <?php echo $stats['confirmed_bookings']; ?>,
+                        <?php echo $stats['pending_bookings']; ?>,
+                        <?php echo $stats['declined_bookings']; ?>
+                    ],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
+                        position: 'bottom',
                         labels: {
-                            color: '#2c3e50',
+                            padding: 20,
                             font: {
-                                size: 12,
-                                family: "'Poppins', sans-serif"
+                                size: 12
                             }
                         }
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#e6e9ed'
-                        },
-                        ticks: {
-                            color: '#5c6c7c',
-                            font: {
-                                size: 11,
-                                family: "'Poppins', sans-serif"
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            color: '#e6e9ed'
-                        },
-                        ticks: {
-                            color: '#5c6c7c',
-                            font: {
-                                size: 11,
-                                family: "'Poppins', sans-serif"
-                            }
-                        }
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 20
                     }
+                },
+                animation: {
+                    duration: 500
                 }
             }
         });
-
-        function toggleDropdown() {
-            var dropdown = document.getElementById("profileDropdown");
-            dropdown.classList.toggle("show");
-        }
-
-        window.onclick = function(event) {
-            if (!event.target.closest('.profile-menu')) {
-                document.getElementById("profileDropdown").classList.remove("show");
-            }
-        };
     </script>
-
 </body>
 </html>

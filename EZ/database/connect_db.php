@@ -2,7 +2,7 @@
 $host = "localhost"; 
 $user = "root";   
 $password = "";       
-$database = "sia_db"; 
+$database = "sia_db2"; 
 
 $conn = mysqli_connect($host, $user, $password, $database);
 

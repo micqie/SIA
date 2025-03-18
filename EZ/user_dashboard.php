@@ -1,9 +1,31 @@
 <?php
 session_start();
-if (!isset($_SESSION['username']) || $_SESSION['role'] != 'U') {
-    header("Location: index.php"); // Redirect if not user
+include 'database/connect_db.php';
+
+// Check if user is logged in
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'U') {
+    header("Location: login.php");
     exit();
 }
+
+// Fetch all leather products
+$query = "SELECT * FROM products WHERE category_id = 1 AND is_active = 1 ORDER BY product_name";
+$result = mysqli_query($conn, $query);
+$products = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+// Fetch user's booking history
+$account_id = $_SESSION['account_id'];
+$bookings_query = "SELECT b.*, GROUP_CONCAT(p.product_name) as products
+                  FROM bookings b 
+                  LEFT JOIN booking_details bd ON b.booking_id = bd.booking_id
+                  LEFT JOIN products p ON bd.product_id = p.product_id
+                  WHERE b.account_id = ? 
+                  GROUP BY b.booking_id
+                  ORDER BY b.created_at DESC LIMIT 5";
+$stmt = $conn->prepare($bookings_query);
+$stmt->bind_param("i", $account_id);
+$stmt->execute();
+$bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -11,239 +33,219 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'U') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EZ Leather Bar - Booking Dashboard</title>
+    <title>User Dashboard - EZ Leather Bar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #ffc107;
-            --primary-hover: rgba(224, 179, 0, 0.8);
-            --text-light: #ffffff;
-            --text-dark: #000000;
-            --overlay-bg: rgba(0, 0, 0, 0.6);
-            --card-bg: rgba(255, 255, 255, 0.1);
-        }
-
         body {
-            font-family: 'Poppins', Arial, sans-serif;
-            background-image: url(assets/leather_bg.png);
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background: linear-gradient(135deg, #F8E2A8, #9D4D36);
             min-height: 100vh;
-            padding-top: 80px;
+            font-family: 'Arial', sans-serif;
+            padding-bottom: 60px;
         }
 
-        /* Enhanced Navbar Styles */
         .navbar {
             background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(10px);
-            padding: 20px 0;
-            transition: all 0.3s ease;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        .navbar-brand {
-            font-size: 2rem;
-            color: var(--text-dark) !important;
-            font-weight: 800;
-            transition: all 0.3s ease;
-            padding: 0 15px;
-            letter-spacing: 1px;
-        }
-
-        .navbar-brand:hover {
-            color: var(--primary-color) !important;
-            transform: translateY(-2px);
-        }
-
-        .navbar-brand i {
-            font-size: 1.8rem;
-            margin-right: 12px;
-            color: var(--primary-color);
-        }
-
-        .nav-link {
-            color: var(--text-dark) !important;
-            font-weight: 600;
-            font-size: 1.1rem;
-            padding: 12px 24px !important;
-            margin: 0 8px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-color) !important;
-            transform: translateY(-2px);
-        }
-
-        /* Main Content Styles */
         .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
+            margin-top: 80px;
             padding: 20px;
         }
 
         .welcome-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 30px;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
-            margin-bottom: 30px;
-            color: var(--text-light);
-            text-align: center;
-        }
-
-        .category-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
             padding: 30px;
-            border-radius: 15px;
             margin-bottom: 30px;
-            color: var(--text-light);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        .bundle-info {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid var(--primary-color);
+        .welcome-section h2 {
+            color: #9D4D36;
+            margin-bottom: 15px;
         }
 
-        .bundle-info h3 {
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-
-        .bundle-info p {
-            margin-bottom: 5px;
-            color: var(--text-light);
-        }
-
-        .bundle-highlight {
-            font-size: 1.2rem;
-            color: var(--primary-color);
-            font-weight: 600;
-            margin: 10px 0;
-        }
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+        .gallery-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .product-card {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            position: relative;
+            border: 2px solid transparent;
         }
 
         .product-card:hover {
             transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-color: #F8E2A8;
         }
 
-        .product-image {
+        .product-card img {
             width: 100%;
             height: 200px;
             object-fit: cover;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        .product-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: var(--text-light);
-        }
-
-        .product-price {
-            font-size: 1.4rem;
-            color: var(--primary-color);
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .book-btn {
-            background: var(--primary-color);
-            color: var(--text-dark);
-            border: none;
-            padding: 10px 20px;
             border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .product-card h5 {
+            color: #9D4D36;
+            margin-bottom: 10px;
             font-weight: 600;
-            transition: all 0.3s ease;
+        }
+
+        .product-card .price {
+            color: #e67e22;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-card .stock {
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .product-card .selection-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 5px;
+            z-index: 2;
+        }
+
+        .quantity-controls {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .quantity-controls.show {
+            display: block;
+        }
+
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+            margin: 0 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px;
+        }
+
+        .quantity-btn {
+            background: #9D4D36;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quantity-btn:hover {
+            background: #8B3D26;
+        }
+
+        .quantity-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .form-check-input:checked {
+            background-color: #9D4D36;
+            border-color: #9D4D36;
+        }
+
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
             width: 100%;
-        }
-
-        .book-btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-        }
-
-        /* Modal Styles */
-        .modal-content {
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 999;
+        }
+
+        .action-bar.show {
+            display: block;
+        }
+
+        #selectedCount {
+            font-weight: bold;
+            color: #9D4D36;
+        }
+
+        .booking-history {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .booking-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #9D4D36;
+        }
+
+        .booking-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-content {
             border-radius: 15px;
         }
 
         .modal-header {
-            border-bottom: none;
-            padding: 20px;
+            background: #9D4D36;
+            color: white;
+            border-radius: 15px 15px 0 0;
         }
 
         .modal-body {
             padding: 20px;
         }
 
-        .modal-footer {
-            border-top: none;
-            padding: 20px;
+        .btn-brown {
+            background-color: #9D4D36;
+            color: white;
         }
 
-        .quantity-input {
-            width: 100px;
-            text-align: center;
-            margin: 0 10px;
-        }
-
-        /* Cart Styles */
-        .cart-icon {
-            position: relative;
-            font-size: 1.5rem;
-        }
-
-        .cart-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--primary-color);
-            color: var(--text-dark);
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 0.8rem;
-            font-weight: bold;
+        .btn-brown:hover {
+            background-color: #8B3D26;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light">
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-store-alt"></i>EZ Leather Bar
+                <i class="fas fa-store-alt me-2"></i>EZ Leather Bar
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -251,238 +253,492 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'U') {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fas fa-home me-2"></i>Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fas fa-shopping-cart me-2"></i>My Bookings</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fas fa-user me-2"></i>Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+                        <a class="nav-link" href="logout.php">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="main-container">
+    <div class="main-container container">
         <!-- Welcome Section -->
         <div class="welcome-section">
-            <h1>Welcome to EZ Leather Bar Booking</h1>
-            <p>Book your bundle package - Each bundle contains 200 pieces</p>
-            <div class="bundle-info">
-                <h3>Bundle Package Information</h3>
-                <p><i class="fas fa-box me-2"></i>Each bundle contains 200 pieces</p>
-                <p><i class="fas fa-users me-2"></i>Designed for 1 pax</p>
-                <p><i class="fas fa-info-circle me-2"></i>Choose between Leather Items or Perfume Set</p>
+            <h2><i class="fas fa-user-circle me-2"></i>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
+            <p>Browse our premium leather products and create your bundle by selecting multiple items.</p>
+        </div>
+
+        <!-- Products Gallery -->
+        <div class="gallery-container">
+            <h4 class="mb-4"><i class="fas fa-shopping-bag me-2"></i>Available Leather Products</h4>
+            <div class="row">
+                <?php foreach ($products as $product): ?>
+                <div class="col-md-4 col-lg-3">
+                    <div class="product-card">
+                        <img src="<?php echo $product['image_path']; ?>" alt="<?php echo $product['product_name']; ?>" 
+                             onerror="this.src='assets/default-product.jpg'">
+                        <h5><?php echo $product['product_name']; ?></h5>
+                        <div class="price">₱<?php echo number_format($product['base_price'], 2); ?></div>
+                        <div class="stock">
+                            <i class="fas fa-box me-1"></i>
+                            <?php echo $product['pieces_per_bundle']; ?> pieces per bundle
+                        </div>
+                        <div class="quantity-controls">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <button type="button" class="quantity-btn decrease-quantity" disabled>
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" class="quantity-input" value="0" min="0" max="5" 
+                                       data-product-id="<?php echo $product['product_id']; ?>"
+                                       data-price="<?php echo $product['base_price']; ?>"
+                                       data-name="<?php echo $product['product_name']; ?>"
+                                       data-pieces="<?php echo $product['pieces_per_bundle']; ?>">
+                                <button type="button" class="quantity-btn increase-quantity">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted d-block text-center mt-2">Max 5 bundles</small>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </div>
         </div>
 
-        <!-- Leather Bundle Section -->
-        <div class="category-section">
-            <h2><i class="fas fa-briefcase me-2"></i>Leather Bundle Package</h2>
-            <div class="bundle-info">
-                <p>200 pieces of your chosen leather item:</p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check me-2"></i>Desk Organizer</li>
-                    <li><i class="fas fa-check me-2"></i>Cord Organizer</li>
-                    <li><i class="fas fa-check me-2"></i>Keychain</li>
-                    <li><i class="fas fa-check me-2"></i>Stethoscope Sleeve</li>
-                    <li><i class="fas fa-check me-2"></i>Bag Tags</li>
-                    <li><i class="fas fa-check me-2"></i>Coin Purse</li>
-                </ul>
-            </div>
-            <div class="product-grid">
-                <!-- Desk Organizer Bundle -->
-                <div class="product-card">
-                    <img src="assets/desk_organizer.jpg" alt="Desk Organizer Bundle" class="product-image">
-                    <h3 class="product-title">Desk Organizer Bundle</h3>
-                    <p class="bundle-highlight">200 pieces</p>
-                    <p class="product-price">₱180,000</p>
-                    <button class="book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" 
-                            data-product="Desk Organizer Bundle" data-price="180000" data-type="leather">
-                        <i class="fas fa-box me-2"></i>Book Bundle
-                    </button>
-                </div>
-
-                <!-- Cord Organizer Bundle -->
-                <div class="product-card">
-                    <img src="assets/cord_organizer.jpg" alt="Cord Organizer Bundle" class="product-image">
-                    <h3 class="product-title">Cord Organizer Bundle</h3>
-                    <p class="bundle-highlight">200 pieces</p>
-                    <p class="product-price">₱150,000</p>
-                    <button class="book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal"
-                            data-product="Cord Organizer Bundle" data-price="150000" data-type="leather">
-                        <i class="fas fa-box me-2"></i>Book Bundle
-                    </button>
-                </div>
-
-                <!-- Keychain Bundle -->
-                <div class="product-card">
-                    <img src="assets/keychain.jpg" alt="Keychain Bundle" class="product-image">
-                    <h3 class="product-title">Keychain Bundle</h3>
-                    <p class="bundle-highlight">200 pieces</p>
-                    <p class="product-price">₱50,000</p>
-                    <button class="book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal"
-                            data-product="Keychain Bundle" data-price="50000" data-type="leather">
-                        <i class="fas fa-box me-2"></i>Book Bundle
-                    </button>
-                </div>
-
-                <!-- Stethoscope Sleeve Bundle -->
-                <div class="product-card">
-                    <img src="assets/stethoscope_sleeve.jpg" alt="Stethoscope Sleeve Bundle" class="product-image">
-                    <h3 class="product-title">Stethoscope Sleeve Bundle</h3>
-                    <p class="bundle-highlight">200 pieces</p>
-                    <p class="product-price">₱100,000</p>
-                    <button class="book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal"
-                            data-product="Stethoscope Sleeve Bundle" data-price="100000" data-type="leather">
-                        <i class="fas fa-box me-2"></i>Book Bundle
-                    </button>
-                </div>
-
-                <!-- Bag Tags Bundle -->
-                <div class="product-card">
-                    <img src="assets/bagtags.jpg" alt="Bag Tags Bundle" class="product-image">
-                    <h3 class="product-title">Bag Tags Bundle</h3>
-                    <p class="bundle-highlight">200 pieces</p>
-                    <p class="product-price">₱70,000</p>
-                    <button class="book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal"
-                            data-product="Bag Tags Bundle" data-price="70000" data-type="leather">
-                        <i class="fas fa-box me-2"></i>Book Bundle
-                    </button>
-                </div>
-
-                <!-- Coin Purse Bundle -->
-                <div class="product-card">
-                    <img src="assets/coin_purse.jpg" alt="Coin Purse Bundle" class="product-image">
-                    <h3 class="product-title">Coin Purse Bundle</h3>
-                    <p class="bundle-highlight">200 pieces</p>
-                    <p class="product-price">₱90,000</p>
-                    <button class="book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal"
-                            data-product="Coin Purse Bundle" data-price="90000" data-type="leather">
-                        <i class="fas fa-box me-2"></i>Book Bundle
-                    </button>
-                </div>
-            </div>
+        <!-- Recent Bookings -->
+        <div class="booking-history">
+            <h4 class="mb-4"><i class="fas fa-history me-2"></i>Recent Bookings</h4>
+            <?php if (empty($bookings)): ?>
+                <p class="text-muted">No recent bookings found.</p>
+            <?php else: ?>
+                <?php foreach ($bookings as $booking): ?>
+                    <div class="booking-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>Booking #<?php echo $booking['booking_id']; ?></h6>
+                                <p class="mb-0">Date: <?php echo date('M d, Y', strtotime($booking['preferred_date'])); ?></p>
+                                <p class="mb-0">Total: ₱<?php echo number_format($booking['total_amount'], 2); ?></p>
+                            </div>
+                            <span class="badge bg-<?php echo $booking['status'] == 'completed' ? 'success' : 'warning'; ?>">
+                                <?php echo ucfirst($booking['status']); ?>
+                            </span>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
 
-        <!-- Perfume Bundle Section -->
-        <div class="category-section">
-            <h2><i class="fas fa-spray-can me-2"></i>Perfume Bundle Package</h2>
-            <div class="bundle-info">
-                <p>200 sets of our exclusive 10-scent collection:</p>
-                <p><i class="fas fa-star me-2"></i>Each set contains 10 unique fragrances</p>
-                <p><i class="fas fa-check me-2"></i>Premium quality scents</p>
-                <p><i class="fas fa-box me-2"></i>Beautifully packaged in gift boxes</p>
-            </div>
-            <div class="product-card">
-                <img src="assets/perfume_set.jpg" alt="Perfume Bundle" class="product-image">
-                <h3 class="product-title">Premium Perfume Bundle</h3>
-                <p class="bundle-highlight">200 sets × 10 scents</p>
-                <p class="product-description">Wholesale package of our exclusive fragrance collection</p>
-                <p class="product-price">₱350,000</p>
-                <button class="book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal"
-                        data-product="Premium Perfume Bundle" data-price="350000" data-type="perfume">
-                    <i class="fas fa-box me-2"></i>Book Bundle
-                </button>
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <span class="me-3">Selected Items: <span id="selectedCount">0</span></span>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="me-3">Total: ₱<span id="totalPrice">0.00</span></span>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-brown" id="bookSelectedBtn">
+                            <i class="fas fa-calendar-check me-2"></i>Book Selected Items
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Booking Modal -->
     <div class="modal fade" id="bookingModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Book Bundle Package</h5>
+                    <h5 class="modal-title">Confirm Your Booking</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="bookingForm">
-                        <div class="bundle-info mb-4">
-                            <p class="mb-0"><i class="fas fa-box me-2"></i>Each bundle contains 200 pieces/sets</p>
-                            <p class="mb-0"><i class="fas fa-users me-2"></i>Designed for 1 pax</p>
+                        <div class="selected-items-list mb-4"></div>
+                        <div class="mb-3">
+                            <label class="form-label">Preferred Date</label>
+                            <input type="date" class="form-control" id="preferredDate" required
+                                   min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Selected Bundle:</label>
-                            <input type="text" class="form-control" id="selectedItem" readonly>
+                            <label class="form-label">Special Instructions</label>
+                            <textarea class="form-control" id="specialInstructions" rows="3"></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Bundle Price:</label>
-                            <input type="text" class="form-control" id="itemPrice" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Number of Bundles:</label>
-                            <div class="d-flex align-items-center">
-                                <button type="button" class="btn btn-outline-secondary" onclick="updateQuantity(-1)">-</button>
-                                <input type="number" class="form-control quantity-input" id="quantity" value="1" min="1" max="5">
-                                <button type="button" class="btn btn-outline-secondary" onclick="updateQuantity(1)">+</button>
+                        
+                        <!-- Payment Information Section -->
+                        <div class="payment-section mb-4">
+                            <h5 class="mb-3">Payment Information</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Payment Method</label>
+                                        <select class="form-select" id="paymentMethod" required>
+                                            <option value="">Select payment method</option>
+                                            <option value="gcash">GCash</option>
+                                            <option value="cash">Cash</option>
+                                       
+                                        </select>
+                                    </div>
+                                </div>
+                             
                             </div>
-                            <small class="text-muted">Each bundle contains 200 pieces/sets</small>
+                            <div class="payment-summary bg-light p-3 rounded">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Subtotal:</span>
+                                    <span>₱<span id="paymentSubtotal">0.00</span></span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Processing Fee (5%):</span>
+                                    <span>₱<span id="paymentFee">0.00</span></span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <strong>Total Amount:</strong>
+                                    <strong>₱<span id="paymentTotal">0.00</span></strong>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Total Amount:</label>
-                            <input type="text" class="form-control" id="totalAmount" readonly>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5>Total Amount: ₱<span id="modalTotalPrice">0.00</span></h5>
+                                <small class="text-muted">Processing fee included</small>
+                            </div>
+                            <button type="submit" class="btn btn-brown">
+                                <i class="fas fa-check me-2"></i>Confirm Booking
+                            </button>
                         </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="confirmBooking()">Confirm Bundle Booking</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Payment Success Modal -->
+    <div class="modal fade" id="paymentSuccessModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Payment Successful</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3">Payment Confirmed!</h4>
+                    <p>Your booking has been successfully processed.</p>
+                    <div class="mt-4">
+                        <button class="btn btn-success" onclick="window.location.reload()">
+                            <i class="fas fa-home me-2"></i>Return to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div class="modal fade" id="receiptModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Booking Receipt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <img src="assets/logo2.jpg" alt="Logo" style="height: 80px;">
+                        <h4 class="mt-3">EZ Leather Bar</h4>
+                        <p class="text-muted">Premium Leather Products</p>
+                    </div>
+                    <div class="receipt-details"></div>
+                    <div class="text-center mt-4">
+                        <div id="qrcode"></div>
+                        <p class="mt-2 mb-0"><strong>Verification Code:</strong></p>
+                        <h5 class="verification-code mb-3"></h5>
+                        <p class="text-muted small">Show this code when visiting our store</p>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button class="btn btn-brown" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Print Receipt
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode.js@1.0.0/qrcode.min.js"></script>
     <script>
-        // Booking Modal Functionality
-        const bookingModal = document.getElementById('bookingModal');
-        bookingModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const product = button.getAttribute('data-product');
-            const price = button.getAttribute('data-price');
-            const type = button.getAttribute('data-type');
+        document.addEventListener('DOMContentLoaded', function() {
+            const actionBar = document.querySelector('.action-bar');
+            const selectedCountSpan = document.getElementById('selectedCount');
+            const totalPriceSpan = document.getElementById('totalPrice');
+            const modalTotalPriceSpan = document.getElementById('modalTotalPrice');
+            const bookSelectedBtn = document.getElementById('bookSelectedBtn');
+            const bookingModal = new bootstrap.Modal(document.getElementById('bookingModal'));
+            const selectedItemsList = document.querySelector('.selected-items-list');
+            const bookingForm = document.getElementById('bookingForm');
+            const receiptModal = new bootstrap.Modal(document.getElementById('receiptModal'));
 
-            document.getElementById('selectedItem').value = product;
-            document.getElementById('itemPrice').value = '₱' + price;
-            updateTotal();
-        });
+            let selectedProducts = new Map(); // Using Map to store product quantities
 
-        function updateQuantity(change) {
-            const quantityInput = document.getElementById('quantity');
-            let newValue = parseInt(quantityInput.value) + change;
-            newValue = Math.max(1, Math.min(5, newValue));
-            quantityInput.value = newValue;
-            updateTotal();
-        }
+            // Initialize quantity controls
+            document.querySelectorAll('.product-card').forEach(card => {
+                const quantityInput = card.querySelector('.quantity-input');
+                const decreaseBtn = card.querySelector('.decrease-quantity');
+                const increaseBtn = card.querySelector('.increase-quantity');
+                const quantityControls = card.querySelector('.quantity-controls');
 
-        function updateTotal() {
-            const price = parseInt(document.getElementById('itemPrice').value.replace('₱', ''));
-            const quantity = parseInt(document.getElementById('quantity').value);
-            const total = price * quantity;
-            document.getElementById('totalAmount').value = '₱' + total;
-        }
+                // Show quantity controls by default
+                quantityControls.classList.add('show');
 
-        function confirmBooking() {
-            const item = document.getElementById('selectedItem').value;
-            const quantity = document.getElementById('quantity').value;
-            const total = document.getElementById('totalAmount').value;
+                // Decrease quantity
+                decreaseBtn.addEventListener('click', function() {
+                    const currentValue = parseInt(quantityInput.value);
+                    if (currentValue > 0) {
+                        quantityInput.value = currentValue - 1;
+                        decreaseBtn.disabled = currentValue - 1 === 0;
+                        increaseBtn.disabled = false;
+                        updateProductSelection(quantityInput);
+                    }
+                });
 
-            // Here you would typically send this data to your server
-            alert(`Booking Confirmed!\n\nItem: ${item}\nQuantity: ${quantity}\nTotal: ${total}`);
+                // Increase quantity
+                increaseBtn.addEventListener('click', function() {
+                    const currentValue = parseInt(quantityInput.value);
+                    if (currentValue < 5) {
+                        quantityInput.value = currentValue + 1;
+                        decreaseBtn.disabled = false;
+                        increaseBtn.disabled = currentValue + 1 === 5;
+                        updateProductSelection(quantityInput);
+                    }
+                });
+
+                // Manual input
+                quantityInput.addEventListener('change', function() {
+                    let value = parseInt(this.value);
+                    if (isNaN(value) || value < 0) value = 0;
+                    if (value > 5) value = 5;
+                    this.value = value;
+                    decreaseBtn.disabled = value === 0;
+                    increaseBtn.disabled = value === 5;
+                    updateProductSelection(this);
+                });
+            });
+
+            function updateProductSelection(input) {
+                const quantity = parseInt(input.value);
+                const productId = input.dataset.productId;
+                const price = parseFloat(input.dataset.price);
+                const name = input.dataset.name;
+                const pieces = parseInt(input.dataset.pieces);
+
+                if (quantity > 0) {
+                    selectedProducts.set(productId, {
+                        id: productId,
+                        price: price,
+                        name: name,
+                        pieces: pieces,
+                        quantity: quantity
+                    });
+                } else {
+                    selectedProducts.delete(productId);
+                }
+
+                updateUI();
+            }
+
+            function updateUI() {
+                const totalBundles = Array.from(selectedProducts.values())
+                    .reduce((sum, product) => sum + product.quantity, 0);
+                selectedCountSpan.textContent = totalBundles;
+
+                const totalPrice = Array.from(selectedProducts.values())
+                    .reduce((sum, product) => sum + (product.price * product.quantity), 0);
+                const totalWithFee = totalPrice + (totalPrice * 0.05);
+
+                totalPriceSpan.textContent = totalPrice.toFixed(2);
+                modalTotalPriceSpan.textContent = totalWithFee.toFixed(2);
+                actionBar.classList.toggle('show', selectedProducts.size > 0);
+                
+                // Update payment summary
+                updatePaymentSummary();
+            }
+
+            // Update payment summary when products are selected
+            function updatePaymentSummary() {
+                const totalPrice = Array.from(selectedProducts.values())
+                    .reduce((sum, product) => sum + (product.price * product.quantity), 0);
+                const processingFee = totalPrice * 0.05;
+                const totalWithFee = totalPrice + processingFee;
+
+                document.getElementById('paymentSubtotal').textContent = totalPrice.toFixed(2);
+                document.getElementById('paymentFee').textContent = processingFee.toFixed(2);
+                document.getElementById('paymentTotal').textContent = totalWithFee.toFixed(2);
+            }
+
+            bookSelectedBtn.addEventListener('click', function() {
+                selectedItemsList.innerHTML = '';
+                
+                selectedProducts.forEach(product => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'mb-3 p-3 bg-light rounded';
+                    const totalPrice = product.price * product.quantity;
+                    const totalPieces = product.pieces * product.quantity;
+                    
+                    itemDiv.innerHTML = `
+                        <h6>${product.name}</h6>
+                        <p class="mb-1">Quantity: ${product.quantity} bundle(s)</p>
+                        <p class="mb-1">Price per bundle: ₱${product.price.toFixed(2)}</p>
+                        <p class="mb-1">Subtotal: ₱${totalPrice.toFixed(2)}</p>
+                        <p class="mb-0">Total pieces: ${totalPieces} pieces</p>
+                    `;
+                    selectedItemsList.appendChild(itemDiv);
+                });
+
+                bookingModal.show();
+            });
+
+            bookingForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const submitButton = this.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+
+                try {
+                    // Validate payment information
+                    const paymentMethod = document.getElementById('paymentMethod').value;
+                    const referenceNumber = document.getElementById('referenceNumber').value;
+
+                    if (!paymentMethod || !referenceNumber) {
+                        throw new Error('Please provide payment information');
+                    }
+
+                    // Check session status
+                    const sessionResponse = await fetch('check_session.php', {
+                        method: 'GET',
+                        credentials: 'same-origin'
+                    });
+                    const sessionData = await sessionResponse.json();
+                    
+                    if (!sessionData.isLoggedIn || sessionData.role !== 'U') {
+                        throw new Error('Your session has expired. Please log in again.');
+                    }
+
+                    // Validate form data
+                    const preferredDate = document.getElementById('preferredDate').value;
+                    const specialInstructions = document.getElementById('specialInstructions').value;
+
+                    if (!preferredDate) {
+                        throw new Error('Please select a preferred date');
+                    }
+
+                    if (selectedProducts.size === 0) {
+                        throw new Error('Please select at least one product');
+                    }
+
+                    // Format products data
+                    const products = Array.from(selectedProducts.values()).map(product => ({
+                        id: parseInt(product.id),
+                        quantity: parseInt(product.quantity),
+                        price: parseFloat(product.price),
+                        name: product.name
+                    }));
+
+                    const formData = {
+                        products: products,
+                        preferredDate: preferredDate,
+                        specialInstructions: specialInstructions,
+                        totalAmount: parseFloat(document.getElementById('paymentTotal').textContent.replace(/,/g, '')),
+                        paymentMethod: paymentMethod,
+                        referenceNumber: referenceNumber
+                    };
+
+                    // Send booking request
+                    const response = await fetch('process_booking.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData),
+                        credentials: 'same-origin'
+                    });
+
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        throw new Error(data.message || 'Booking failed');
+                    }
+
+                    // Success handling
+                    bookingForm.reset();
+                    selectedProducts.clear();
+                    document.querySelectorAll('.quantity-input').forEach(input => {
+                        input.value = 0;
+                        input.dispatchEvent(new Event('change'));
+                    });
+                    updateUI();
             
-            // Close the modal
-            const modal = bootstrap.Modal.getInstance(bookingModal);
-            modal.hide();
-        }
+                    // Hide booking modal and show payment success modal
+                    bookingModal.hide();
+                    const paymentSuccessModal = new bootstrap.Modal(document.getElementById('paymentSuccessModal'));
+                    paymentSuccessModal.show();
+            
+                    // Show receipt
+                    showReceipt(data);
 
-        // Add event listener for quantity input
-        document.getElementById('quantity').addEventListener('input', updateTotal);
+                } catch (error) {
+                    console.error('Booking error:', error);
+                    alert('Error: ' + error.message);
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-check me-2"></i>Confirm Booking';
+                }
+            });
+
+            function showReceipt(data) {
+                const receiptDetails = document.querySelector('.receipt-details');
+                const receipt = data.receipt;
+                
+                receiptDetails.innerHTML = `
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <p><strong>Booking Reference:</strong><br>${receipt.booking_reference}</p>
+                            <p><strong>Date:</strong><br>${receipt.date}</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p><strong>Preferred Date:</strong><br>${receipt.preferred_date}</p>
+                        </div>
+                    </div>
+                    <div class="selected-items-list mb-4"></div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Subtotal:</strong></p>
+                            <p><strong>Processing Fee:</strong></p>
+                            <p><strong>Total Amount:</strong></p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p>₱${receipt.total_amount}</p>
+                            <p>₱${receipt.processing_fee}</p>
+                            <p>₱${receipt.grand_total}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Copy selected items to receipt
+                const receiptItemsList = receiptDetails.querySelector('.selected-items-list');
+                receiptItemsList.innerHTML = document.querySelector('#bookingModal .selected-items-list').innerHTML;
+
+                // Show receipt modal
+                receiptModal.show();
+            }
+        });
     </script>
 </body>
 </html>
-

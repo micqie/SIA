@@ -20,9 +20,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Verify password
             if (password_verify($password, $row["password"])) {
+                // Set all necessary session variables
+                $_SESSION["account_id"] = $row["account_id"];
                 $_SESSION["username"] = $username;
                 $_SESSION["role"] = $row["role"];
 
+                // Clear any previous session messages
+                unset($_SESSION['error']);
+                
                 if ($row["role"] == 'U') {
                     header("location: user_dashboard.php");
                 } elseif ($row["role"] == 'A') {
