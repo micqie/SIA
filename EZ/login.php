@@ -419,7 +419,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="left-content">
                 <h1 class="brand-highlight">EZ Leather Bar</h1>
-                <p class="lead">Experience luxury and quality with our premium leather accessories and fragrances.</p>
+                <p class="lead">Experience luxury and quality with our premium leather accessories.</p>
                 
                 <ul class="feature-list">
                     <li class="feature-item">

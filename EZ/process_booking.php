@@ -1,203 +1,107 @@
 <?php
 session_start();
-require 'database/connect_db.php';
+include 'database/connect_db.php';
 
-header('Content-Type: application/json');
-
-// Debug session data
-error_log("Session data: " . print_r($_SESSION, true));
-
-// Comprehensive session validation
-if (!isset($_SESSION['account_id']) || !isset($_SESSION['role'])) {
-    error_log("Session validation failed: Missing account_id or role");
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Your session has expired. Please log in again.',
-        'code' => 'SESSION_EXPIRED'
-    ]);
+// Check if user is logged in
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'U') {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-if ($_SESSION['role'] !== 'U') {
-    error_log("Session validation failed: Invalid role - " . $_SESSION['role']);
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Invalid user role. Please log in with a user account.',
-        'code' => 'INVALID_ROLE'
-    ]);
-    exit();
-}
+// Get JSON data
+$json = file_get_contents('php://input');
+$data = json_decode($json, true);
 
-// Get and validate POST data
-$raw_data = file_get_contents('php://input');
-error_log("Received data: " . $raw_data); // Debug received data
-
-$data = json_decode($raw_data, true);
-
-if (!$data) {
-    error_log("Invalid JSON data received");
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Invalid data format received',
-        'code' => 'INVALID_DATA'
-    ]);
-    exit();
-}
-
-// Validate required fields with detailed checks
-if (empty($data['products'])) {
-    echo json_encode([
-        'success' => false, 
-        'message' => 'No products selected',
-        'code' => 'NO_PRODUCTS'
-    ]);
-    exit();
-}
-
-if (empty($data['preferredDate'])) {
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Preferred date is required',
-        'code' => 'NO_DATE'
-    ]);
-    exit();
-}
-
-if (!isset($data['totalAmount']) || !is_numeric($data['totalAmount'])) {
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Invalid total amount',
-        'code' => 'INVALID_AMOUNT'
-    ]);
-    exit();
-}
-
-// Validate payment information
-if (empty($data['paymentMethod']) || empty($data['referenceNumber'])) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Payment information is required',
-        'code' => 'INVALID_PAYMENT'
-    ]);
+if ($data === null) {
+    echo json_encode(['success' => false, 'message' => 'Invalid JSON data']);
     exit();
 }
 
 try {
+    // Start transaction
     $conn->begin_transaction();
 
     // Generate booking reference
-    $booking_reference = 'BK' . date('YmdHis') . rand(1000, 9999);
-    $total_amount = floatval($data['totalAmount']);
+    $booking_reference = 'BK' . date('YmdHis') . rand(100, 999);
+    $verification_code = strtoupper(substr(md5(uniqid()), 0, 8));
+    
+    // Calculate totals
+    $total_amount = $data['totalAmount'];
     $processing_fee = $total_amount * 0.05;
-    $special_instructions = isset($data['specialInstructions']) ? $data['specialInstructions'] : '';
-    $account_id = intval($_SESSION['account_id']);
+    $grand_total = $total_amount + $processing_fee;
 
-    error_log("Processing booking for account_id: " . $account_id);
-
-    // Insert booking record with payment status
-    $sql = "INSERT INTO bookings (account_id, booking_reference, total_amount, processing_fee, 
-            preferred_date, special_instructions, status, payment_status) 
-            VALUES (?, ?, ?, ?, ?, ?, 'pending', 'paid')";
-    
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        throw new Exception("Error preparing booking statement: " . $conn->error);
-    }
-
-    $stmt->bind_param('isddss', 
-        $account_id,
+    // Insert booking record
+    $stmt = $conn->prepare("INSERT INTO bookings (account_id, booking_reference, verification_code, preferred_date, special_instructions, total_amount, processing_fee, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
+    $stmt->bind_param("issssdd", 
+        $_SESSION['account_id'],
         $booking_reference,
-        $total_amount,
-        $processing_fee,
+        $verification_code,
         $data['preferredDate'],
-        $special_instructions
-    );
-    
-    if (!$stmt->execute()) {
-        throw new Exception("Error creating booking: " . $stmt->error);
-    }
-    
-    $booking_id = $conn->insert_id;
-    
-    // Insert payment record
-    $payment_sql = "INSERT INTO payments (booking_id, amount, payment_method, payment_status, transaction_id) 
-                    VALUES (?, ?, ?, 'completed', ?)";
-    $payment_stmt = $conn->prepare($payment_sql);
-    
-    if (!$payment_stmt) {
-        throw new Exception("Error preparing payment statement: " . $conn->error);
-    }
-    
-    $payment_stmt->bind_param('idss',
-        $booking_id,
+        $data['specialInstructions'],
         $total_amount,
-        $data['paymentMethod'],
-        $data['referenceNumber']
+        $processing_fee
     );
-    
-    if (!$payment_stmt->execute()) {
-        throw new Exception("Error recording payment: " . $payment_stmt->error);
-    }
-    
-    // Insert booking details
-    $detail_sql = "INSERT INTO booking_details (booking_id, product_id, quantity, unit_price, subtotal) 
-                   VALUES (?, ?, ?, ?, ?)";
-    $detail_stmt = $conn->prepare($detail_sql);
-    
-    if (!$detail_stmt) {
-        throw new Exception("Error preparing detail statement: " . $conn->error);
-    }
+    $stmt->execute();
+    $booking_id = $conn->insert_id;
 
+    // Insert payment record
+    $payment_stmt = $conn->prepare("INSERT INTO payments (booking_id, amount, payment_method, payment_status) VALUES (?, ?, ?, 'pending')");
+    $payment_stmt->bind_param("ids",
+        $booking_id,
+        $grand_total,
+        $data['paymentMethod']
+    );
+    $payment_stmt->execute();
+
+    // Insert booking details and update stock
     foreach ($data['products'] as $product) {
-        if (!isset($product['id']) || !isset($product['quantity']) || !isset($product['price'])) {
-            throw new Exception("Invalid product data");
-        }
-
-        $subtotal = floatval($product['price']) * intval($product['quantity']);
-        $product_id = intval($product['id']);
-        $quantity = intval($product['quantity']);
-        $price = floatval($product['price']);
-
-        $detail_stmt->bind_param('iiidd',
-            $booking_id,
-            $product_id,
-            $quantity,
-            $price,
-            $subtotal
-        );
+        // Check stock availability
+        $stock_check = $conn->prepare("SELECT stock FROM products WHERE product_id = ? AND stock >= ?");
+        $stock_check->bind_param("ii", $product['id'], $product['quantity']);
+        $stock_check->execute();
+        $stock_result = $stock_check->get_result();
         
-        if (!$detail_stmt->execute()) {
-            throw new Exception("Error adding product details: " . $detail_stmt->error);
+        if ($stock_result->num_rows === 0) {
+            throw new Exception("Insufficient stock for one or more products");
         }
+
+        // Insert booking detail
+        $detail_stmt = $conn->prepare("INSERT INTO booking_details (booking_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)");
+        $detail_stmt->bind_param("iiid", $booking_id, $product['id'], $product['quantity'], $product['price']);
+        $detail_stmt->execute();
+
+        // Update stock
+        $update_stock = $conn->prepare("UPDATE products SET stock = stock - ? WHERE product_id = ?");
+        $update_stock->bind_param("ii", $product['quantity'], $product['id']);
+        $update_stock->execute();
     }
-    
+
+    // Commit transaction
     $conn->commit();
-    
+
     // Prepare receipt data
     $receipt = [
         'booking_reference' => $booking_reference,
+        'verification_code' => $verification_code,
         'date' => date('Y-m-d H:i:s'),
         'preferred_date' => $data['preferredDate'],
         'total_amount' => number_format($total_amount, 2),
         'processing_fee' => number_format($processing_fee, 2),
-        'grand_total' => number_format($total_amount + $processing_fee, 2),
-        'products' => $data['products'],
-        'payment_method' => $data['paymentMethod'],
-        'reference_number' => $data['referenceNumber']
+        'grand_total' => number_format($grand_total, 2)
     ];
-    
+
     echo json_encode([
         'success' => true,
-        'message' => 'Booking confirmed successfully',
+        'message' => 'Booking successful',
         'receipt' => $receipt
     ]);
-    
+
 } catch (Exception $e) {
+    // Rollback transaction on error
     $conn->rollback();
-    error_log("Booking error: " . $e->getMessage()); // Log the error
     echo json_encode([
         'success' => false,
-        'message' => 'Error processing booking: ' . $e->getMessage()
+        'message' => $e->getMessage()
     ]);
 }
 

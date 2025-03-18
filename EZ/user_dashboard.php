@@ -42,16 +42,27 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             min-height: 100vh;
             font-family: 'Arial', sans-serif;
             padding-bottom: 60px;
+            margin: 0;
+            overflow-x: hidden;
         }
 
         .navbar {
             background: rgba(255, 255, 255, 0.95) !important;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
 
         .main-container {
             margin-top: 80px;
             padding: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .welcome-section {
@@ -81,9 +92,9 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             padding: 15px;
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: all 0.3s;
             position: relative;
             border: 2px solid transparent;
+            height: 100%;
         }
 
         .product-card:hover {
@@ -179,7 +190,7 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             position: fixed;
             bottom: 0;
             left: 0;
-            width: 100%;
+            right: 0;
             background: rgba(255, 255, 255, 0.95);
             padding: 15px;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
@@ -218,6 +229,8 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
         .modal-content {
             border-radius: 15px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .modal-header {
@@ -238,6 +251,22 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         .btn-brown:hover {
             background-color: #8B3D26;
             color: white;
+        }
+
+        /* Fix for responsive layout */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+                margin-top: 60px;
+            }
+            
+            .product-card {
+                margin-bottom: 15px;
+            }
+            
+            .action-bar {
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -276,9 +305,11 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 <?php foreach ($products as $product): ?>
                 <div class="col-md-4 col-lg-3">
                     <div class="product-card">
-                        <img src="<?php echo $product['image_path']; ?>" alt="<?php echo $product['product_name']; ?>" 
-                             onerror="this.src='assets/default-product.jpg'">
-                        <h5><?php echo $product['product_name']; ?></h5>
+                        <img src="<?php echo $product['image_path']; ?>" 
+                             alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
+                             onerror="this.src='assets/bag_tags.png'"
+                             class="product-image">
+                        <h5><?php echo htmlspecialchars($product['product_name']); ?></h5>
                         <div class="price">₱<?php echo number_format($product['base_price'], 2); ?></div>
                         <div class="stock">
                             <i class="fas fa-box me-1"></i>
@@ -381,11 +412,16 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                                             <option value="">Select payment method</option>
                                             <option value="gcash">GCash</option>
                                             <option value="cash">Cash</option>
-                                       
                                         </select>
                                     </div>
                                 </div>
-                             
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Reference Number</label>
+                                        <input type="text" class="form-control" id="referenceNumber" placeholder="Enter reference number">
+                                        <small class="text-muted">Required for GCash payments</small>
+                                    </div>
+                                </div>
                             </div>
                             <div class="payment-summary bg-light p-3 rounded">
                                 <div class="d-flex justify-content-between mb-2">
@@ -616,8 +652,12 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     const paymentMethod = document.getElementById('paymentMethod').value;
                     const referenceNumber = document.getElementById('referenceNumber').value;
 
-                    if (!paymentMethod || !referenceNumber) {
-                        throw new Error('Please provide payment information');
+                    if (!paymentMethod) {
+                        throw new Error('Please select a payment method');
+                    }
+
+                    if (paymentMethod === 'gcash' && !referenceNumber) {
+                        throw new Error('Please provide a reference number for GCash payment');
                     }
 
                     // Check session status

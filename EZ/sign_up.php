@@ -6,36 +6,22 @@ $success = false; // Variable to track successful registration
 $errors = array();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $full_name = mysqli_real_escape_string($conn, $_POST['full_name']);
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $username = mysqli_real_escape_string($conn, $_POST['username']); // Add username field
+    $username = trim(mysqli_real_escape_string($conn, $_POST['username']));
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
 
-    // Validate email format
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Invalid email format";
+    // Basic validation
+    if (strlen($username) < 3) {
+        $errors[] = "Username must be at least 3 characters long";
     }
 
-    // Validate username (alphanumeric and between 3-50 characters)
-    if (!preg_match('/^[a-zA-Z0-9]{3,50}$/', $username)) {
-        $errors[] = "Username must be between 3-50 characters and contain only letters and numbers";
+    if (strlen($password) < 4) {
+        $errors[] = "Password must be at least 4 characters long";
     }
 
     // Check if passwords match
     if ($password !== $confirm_password) {
         $errors[] = "Passwords do not match!";
-    }
-
-    // Check password strength
-    if (strlen($password) < 8 || !preg_match("/[0-9]/", $password) || !preg_match("/[a-zA-Z]/", $password)) {
-        $errors[] = "Password must be at least 8 characters long and contain both letters and numbers";
-    }
-
-    // Check if email already exists
-    $check_email = mysqli_query($conn, "SELECT * FROM accounts WHERE email = '$email'");
-    if (mysqli_num_rows($check_email) > 0) {
-        $errors[] = "Email already registered";
     }
 
     // Check if username already exists
@@ -50,8 +36,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $role = "U"; // Default role as User
 
         // Use prepared statement for insertion
-        $stmt = $conn->prepare("INSERT INTO accounts (username, password, email, role) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $username, $hashed_password, $email, $role);
+        $stmt = $conn->prepare("INSERT INTO accounts (username, password, role) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $username, $hashed_password, $role);
 
         if ($stmt->execute()) {
             $success = true;
@@ -79,15 +65,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         body {
             font-family: Arial, sans-serif;
             background-image: url(assets/leather_bg.png);
-            background-size: 100%;
-            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: white;
-            text-align: center;
-            scroll-behavior: smooth;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            margin: 0;
+            padding: 0;
             overflow-x: hidden;
             overflow-y: hidden;
         }
@@ -96,11 +80,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: flex;
             min-height: 100vh;
             width: 100%;
-
+            margin-top: 80px; /* Add space for fixed navbar */
         }
 
         .left-side {
-
+            margin-bottom: 500px;
             flex: 1;
             background: url('assets/bg.png') no-repeat center center;
             background-size: cover;
@@ -112,7 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .left-content {
-            margin
+     
             position: relative;
             z-index: 2;
             text-align: left;
@@ -131,13 +115,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .feature-list {
             list-style: none;
             padding: 0;
-            margin: 30px 0;
+            margin: 20px 0;
         }
 
         .feature-item {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding: 15px;
             background: rgba(255,255,255,0.1);
             border-radius: 10px;
@@ -227,7 +211,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .right-side {
-            margin-top: 100px;
+            margin-bottom: 500px;
             flex: 1;
             display: flex;
             align-items: center;
@@ -235,17 +219,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background: url('assets/right-bg.jpg') no-repeat center center;
             background-size: cover;
             position: relative;
+            padding: 40px;
         }
 
         .register-card {
             background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             max-width: 400px;
             width: 100%;
-            margin: auto;
             color: white;
             animation: fadeInDown 0.8s ease-in-out;
         }
@@ -260,7 +244,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .register-card input {
             background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 12px;
             border-radius: 8px;
             width: 100%;
@@ -275,6 +259,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .register-card input:focus {
             background: rgba(255, 255, 255, 0.3);
             outline: none;
+            border-color: #ffc107;
         }
 
         .register-card .btn {
@@ -366,6 +351,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .navbar-nav {
             gap: 10px;
         }
+
+        .alert {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert p {
+            margin: 0;
+        }
+
+        /* Remove floating images and their animations */
+        .floating-images, .floating-image {
+            display: none;
+        }
+
+        /* Adjust feature list spacing */
+        .feature-list {
+            margin: 20px 0;
+        }
+
+        .feature-item {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -409,28 +421,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="left-content">
                 <h1 class="brand-highlight">EZ Leather Bar</h1>
-                <p class="lead">Join our exclusive community and discover premium leather accessories and fragrances.</p>
+                <p class="lead">Join our exclusive community and discover premium leather accessories</p>
                 
                 <ul class="feature-list">
                     <li class="feature-item">
                         <i class="fas fa-star"></i>
                         <div class="feature-text">
-                            <strong>Member Benefits</strong><br>
-                            Exclusive access to new collections and special offers
+                            <strong>Automated Booking System</strong><br>
+                            Easily book and manage your reservations online, eliminating manual processes and reducing errors.
                         </div>
                     </li>
                     <li class="feature-item">
                         <i class="fas fa-gift"></i>
                         <div class="feature-text">
-                            <strong>Welcome Gift</strong><br>
-                            Special discount on your first purchase
+                            <strong>Paperless and Eco-Friendly System</strong><br>
+                            Go digital! Reduce reliance on physical materials by streamlining booking and verification.
                         </div>
                     </li>
                     <li class="feature-item">
                         <i class="fas fa-shield-alt"></i>
                         <div class="feature-text">
-                            <strong>Secure Shopping</strong><br>
-                            Safe and protected shopping experience
+                            <strong>Seamless Experience for Businesses and Clients</strong><br>
+                            A fast, secure, and scalable solution designed for personalized souvenir and event package services.
                         </div>
                     </li>
                 </ul>
@@ -440,24 +452,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="register-card">
                 <h3>Create Account</h3>
                 <?php if (!empty($errors)): ?>
-                    <div class="alert alert-danger">
+                    <div class="alert">
                         <?php foreach ($errors as $error): ?>
-                            <p class="mb-0"><?php echo $error; ?></p>
+                            <p><?php echo $error; ?></p>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
                 <form action="" method="post">
                     <div class="mb-3">
-                        <input type="text" name="full_name" class="form-control" placeholder="Full Name" required 
-                            value="<?php echo isset($_POST['full_name']) ? htmlspecialchars($_POST['full_name']) : ''; ?>">
-                    </div>
-                    <div class="mb-3">
                         <input type="text" name="username" class="form-control" placeholder="Username" required
                             value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
-                    </div>
-                    <div class="mb-3">
-                        <input type="email" name="email" class="form-control" placeholder="Email Address" required
-                            value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
                     </div>
                     <div class="mb-3">
                         <input type="password" name="password" class="form-control" placeholder="Password" required>

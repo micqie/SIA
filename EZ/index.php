@@ -198,6 +198,11 @@
                             <i class="fas fa-envelope me-1"></i>Contact
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="employee_dashboard.php">
+                            <i class="fas fa-user-tie me-1"></i>Employee
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -234,7 +239,7 @@
         <div class="row align-items-center">
             <div class="col-md-6 mb-4">
                 <div class="about-image-container" style="position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-                    <img src="assets/about-leather.jpg" class="img-fluid" alt="Leather Crafting" style="width: 100%; transform: scale(1.02);">
+                    <img src="assets/image.png" class="img-fluid" alt="Leather Crafting" style="width: 100%; transform: scale(1.02);">
                     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.2);"></div>
                 </div>
             </div>
@@ -276,47 +281,31 @@
                     <div class="row mb-4">
                         <div class="col-md-6 mb-4">
                             <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;">
-                                <i class="fas fa-map-marker-alt" style="font-size: 2rem; color: #ffc107; margin-bottom: 15px;"></i>
-                                <h4 style="color: white;">Visit Us</h4>
-                                <p style="color: #ddd;">123 Leather Lane<br>Craft District, Manila</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-4">
-                            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;">
-                                <i class="fas fa-clock" style="font-size: 2rem; color: #ffc107; margin-bottom: 15px;"></i>
-                                <h4 style="color: white;">Business Hours</h4>
-                                <p style="color: #ddd;">Monday - Saturday<br>9:00 AM - 6:00 PM</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-4">
-                            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;">
                                 <i class="fas fa-phone" style="font-size: 2rem; color: #ffc107; margin-bottom: 15px;"></i>
                                 <h4 style="color: white;">Call Us</h4>
-                                <p style="color: #ddd;">+63 912 345 6789</p>
+                                <p style="color: #ddd;">09526313663</p>
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;">
                                 <i class="fas fa-envelope" style="font-size: 2rem; color: #ffc107; margin-bottom: 15px;"></i>
                                 <h4 style="color: white;">Email Us</h4>
-                                <p style="color: #ddd;">info@ezleatherbar.com</p>
+                                <p style="color: #ddd;">ezleatherbarcdo@gmail.com</p>
                             </div>
                         </div>
                     </div>
                     <div class="social-icons" style="margin-top: 30px;">
-                        <a href="#" style="color: white; font-size: 2rem; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
-                            <i class="fab fa-facebook"></i>
+                        <a href="https://web.facebook.com/profile.php?id=61558304313354" class="social-link" style="color: white; text-decoration: none; display: inline-block; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
+                            <i class="fab fa-facebook me-2"></i>
+                            <span>EZ Leather Bar CDO</span>
                         </a>
-                        <a href="#" style="color: white; font-size: 2rem; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
-                            <i class="fab fa-instagram"></i>
+                        <a href="https://instagram.com/ezleatherbarcdo" class="social-link" style="color: white; text-decoration: none; display: inline-block; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
+                            <i class="fab fa-instagram me-2"></i>
+                            <span>@ezleatherbarcdo</span>
                         </a>
-                        <a href="#" style="color: white; font-size: 2rem; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" style="color: white; font-size: 2rem; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
-                            <i class="fab fa-pinterest"></i>
+                        <a href="https://tiktok.com/@ezleatherbarcdoo" class="social-link" style="color: white; text-decoration: none; display: inline-block; margin: 0 15px; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='white'">
+                            <i class="fab fa-tiktok me-2"></i>
+                            <span>@ezleatherbarcdoo</span>
                         </a>
                     </div>
                 </div>
@@ -329,25 +318,17 @@
 <footer style="background: rgba(0, 0, 0, 0.9); padding: 50px 0 20px; color: white;">
     <div class="container">
         <div class="row">
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 mb-4">
                 <h3 style="color: #ffc107; margin-bottom: 20px;">EZ Leather Bar</h3>
                 <p style="color: #ddd;">Crafting premium leather products with passion and precision. Your satisfaction is our priority.</p>
             </div>
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 mb-4">
                 <h3 style="color: #ffc107; margin-bottom: 20px;">Quick Links</h3>
                 <ul style="list-style: none; padding: 0;">
                     <li style="margin-bottom: 10px;"><a href="#home" style="color: #ddd; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='#ddd'">Home</a></li>
                     <li style="margin-bottom: 10px;"><a href="#about" style="color: #ddd; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='#ddd'">About Us</a></li>
                     <li style="margin-bottom: 10px;"><a href="#contact" style="color: #ddd; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.color='#ffc107'" onmouseout="this.style.color='#ddd'">Contact</a></li>
                 </ul>
-            </div>
-            <div class="col-md-4 mb-4">
-                <h3 style="color: #ffc107; margin-bottom: 20px;">Newsletter</h3>
-                <p style="color: #ddd;">Subscribe to our newsletter for updates and exclusive offers.</p>
-                <div class="input-group mt-3">
-                    <input type="email" class="form-control" placeholder="Your Email" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
-                    <button class="btn btn-warning" type="submit">Subscribe</button>
-                </div>
             </div>
         </div>
         <div class="text-center" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">

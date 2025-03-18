@@ -42,14 +42,110 @@ $bookings = mysqli_fetch_all($result, MYSQLI_ASSOC);
         .navbar {
             background: #9D4D36 !important;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0.5rem 1rem;
         }
 
-        .navbar-brand, .nav-link {
+        .navbar-brand {
             color: white !important;
+            font-size: 1.5rem;
         }
 
-        .main-container {
-            margin-top: 80px;
+        .profile-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-btn i {
+            font-size: 1.2rem;
+        }
+
+        .profile-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1001;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .profile-menu.show {
+            display: block;
+        }
+
+        .profile-menu a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .profile-menu a:hover {
+            background-color: #f8f9fa;
+        }
+
+        .profile-menu .divider {
+            border-top: 1px solid #eee;
+            margin: 0;
+        }
+
+        .profile-menu .logout-btn {
+            color: #dc3545;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: #9D4D36;
+            padding-top: 80px;
+            z-index: 1000;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar .nav-link {
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #fff;
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left-color: #fff;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .main-content {
+            margin-left: 250px;
             padding: 20px;
         }
 
@@ -59,11 +155,6 @@ $bookings = mysqli_fetch_all($result, MYSQLI_ASSOC);
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-
-        .booking-card:hover {
-            transform: translateY(-5px);
         }
 
         .booking-header {
@@ -141,31 +232,54 @@ $bookings = mysqli_fetch_all($result, MYSQLI_ASSOC);
 </head>
 <body>
     <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="admin_dashboard.php">
                 <i class="fas fa-store-alt me-2"></i>EZ Leather Bar Admin
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin_dashboard.php">
-                            <i class="fas fa-chart-line me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="logout.php">
-                            <i class="fas fa-sign-out-alt me-1"></i>Logout
-                        </a>
-                    </li>
-                </ul>
+            <div class="profile-dropdown">
+                <button class="profile-btn" onclick="toggleProfileMenu()">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Admin</span>
+                </button>
+                <div class="profile-menu" id="profileMenu">
+                    <a href="admin_settings.php">
+                        <i class="fas fa-user me-2"></i>Profile
+                    </a>
+                    <hr class="divider">
+                    <a href="logout.php" class="logout-btn">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="main-container container">
+    <div class="sidebar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="admin_dashboard.php">
+                    <i class="fas fa-chart-line"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="admin_bookings.php">
+                    <i class="fas fa-calendar-check"></i>Bookings
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="admin_inventory.php">
+                    <i class="fas fa-boxes"></i>Inventory
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="admin_settings.php">
+                    <i class="fas fa-cog"></i>Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-calendar-check me-2"></i>Manage Bookings</h2>
             <div class="d-flex gap-2">
@@ -242,6 +356,20 @@ $bookings = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.profile-btn')) {
+                const menu = document.getElementById('profileMenu');
+                if (menu.classList.contains('show')) {
+                    menu.classList.remove('show');
+                }
+            }
+        }
+
         function filterBookings(status) {
             const bookings = document.querySelectorAll('.booking-card');
             bookings.forEach(booking => {
