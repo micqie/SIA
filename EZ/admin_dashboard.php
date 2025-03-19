@@ -331,26 +331,18 @@ $low_stock_items = $low_stock_count['count'];
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg fixed-top">
+   
+<nav class="navbar navbar-expand-lg fixed-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="admin_dashboard.php">
                 <i class="fas fa-store-alt me-2"></i>EZ Leather Bar Admin
             </a>
-            <div class="profile-dropdown">
-                <button class="profile-btn" onclick="toggleProfileMenu()">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Admin</span>
-                </button>
-                <div class="profile-menu" id="profileMenu">
-                    <a href="admin_settings.php">
-                        <i class="fas fa-user me-2"></i>Profile
-                    </a>
-                    <hr class="divider">
+
+             
                     <a href="logout.php" class="logout-btn">
                         <i class="fas fa-sign-out-alt me-2"></i>Logout
                     </a>
-                </div>
-            </div>
+       
         </div>
     </nav>
 
@@ -371,11 +363,7 @@ $low_stock_items = $low_stock_count['count'];
                     <i class="fas fa-boxes"></i>Inventory
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="admin_settings.php">
-                    <i class="fas fa-cog"></i>Settings
-                </a>
-            </li>
+     
         </ul>
     </div>
 

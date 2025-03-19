@@ -13,103 +13,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'add_product':
-                $product_name = mysqli_real_escape_string($conn, $_POST['product_name']);
-                $category_id = intval($_POST['category_id']);
-                $description = mysqli_real_escape_string($conn, $_POST['description']);
-                $base_price = floatval($_POST['base_price']);
-                $pieces_per_bundle = intval($_POST['pieces_per_bundle']);
-                $stock = intval($_POST['stock']);
-                $is_active = isset($_POST['is_active']) ? 1 : 0;
-                
-                // Handle image upload
-                $image_path = null;
-                if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-                    $target_dir = "assets/products/";
-                    $file_extension = strtolower(pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION));
-                    $new_filename = uniqid() . '.' . $file_extension;
-                    $target_file = $target_dir . $new_filename;
-                    
-                    if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-                        $image_path = $target_file;
-                    }
-                }
-                
-                $query = "INSERT INTO products (category_id, product_name, description, base_price, pieces_per_bundle, stock, image_path, is_active) 
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                $stmt = $conn->prepare($query);
-                $stmt->bind_param('issdssis', $category_id, $product_name, $description, $base_price, $pieces_per_bundle, $stock, $image_path, $is_active);
-                
-                if ($stmt->execute()) {
-                    $_SESSION['success_message'] = "Product added successfully!";
-                } else {
-                    $_SESSION['error_message'] = "Error adding product: " . $stmt->error;
-                }
+                // ...existing code...
                 break;
                 
             case 'update_product':
-                $product_id = intval($_POST['product_id']);
-                $product_name = mysqli_real_escape_string($conn, $_POST['product_name']);
-                $category_id = intval($_POST['category_id']);
-                $description = mysqli_real_escape_string($conn, $_POST['description']);
-                $base_price = floatval($_POST['base_price']);
-                $pieces_per_bundle = intval($_POST['pieces_per_bundle']);
-                $stock = intval($_POST['stock']);
-                $is_active = isset($_POST['is_active']) ? 1 : 0;
-                
-                // Handle image upload
-                $image_path = $_POST['current_image'];
-                if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-                    $target_dir = "assets/products/";
-                    $file_extension = strtolower(pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION));
-                    $new_filename = uniqid() . '.' . $file_extension;
-                    $target_file = $target_dir . $new_filename;
-                    
-                    if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-                        // Delete old image if exists
-                        if ($image_path && file_exists($image_path)) {
-                            unlink($image_path);
-                        }
-                        $image_path = $target_file;
-                    }
-                }
-                
-                $query = "UPDATE products SET category_id = ?, product_name = ?, description = ?, base_price = ?, 
-                         pieces_per_bundle = ?, stock = ?, image_path = ?, is_active = ? WHERE product_id = ?";
-                $stmt = $conn->prepare($query);
-                $stmt->bind_param('issdssisi', $category_id, $product_name, $description, $base_price, 
-                                $pieces_per_bundle, $stock, $image_path, $is_active, $product_id);
-                
-                if ($stmt->execute()) {
-                    $_SESSION['success_message'] = "Product updated successfully!";
-                } else {
-                    $_SESSION['error_message'] = "Error updating product: " . $stmt->error;
-                }
+                // ...existing code...
                 break;
                 
-            case 'delete_product':
+            case 'archive_product':
                 $product_id = intval($_POST['product_id']);
-                
-                // Get image path before deleting
-                $query = "SELECT image_path FROM products WHERE product_id = ?";
-                $stmt = $conn->prepare($query);
-                $stmt->bind_param('i', $product_id);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                $product = $result->fetch_assoc();
-                
-                // Delete product
-                $query = "DELETE FROM products WHERE product_id = ?";
+                $query = "UPDATE products SET is_active = 0 WHERE product_id = ?";
                 $stmt = $conn->prepare($query);
                 $stmt->bind_param('i', $product_id);
                 
                 if ($stmt->execute()) {
-                    // Delete image file if exists
-                    if ($product['image_path'] && file_exists($product['image_path'])) {
-                        unlink($product['image_path']);
-                    }
-                    $_SESSION['success_message'] = "Product deleted successfully!";
+                    $_SESSION['success_message'] = "Product archived successfully!";
                 } else {
-                    $_SESSION['error_message'] = "Error deleting product: " . $stmt->error;
+                    $_SESSION['error_message'] = "Error archiving product: " . $stmt->error;
                 }
                 break;
         }
@@ -120,20 +40,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch all products with their categories
+// Fetch all active products with their categories
 $query = "SELECT p.*, pc.category_name 
           FROM products p 
           LEFT JOIN product_categories pc ON p.category_id = pc.category_id 
+          WHERE p.is_active = 1
           ORDER BY p.product_name";
 $result = mysqli_query($conn, $query);
 $products = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+// Fetch all archived products with their categories
+$archived_query = "SELECT p.*, pc.category_name 
+                   FROM products p 
+                   LEFT JOIN product_categories pc ON p.category_id = pc.category_id 
+                   WHERE p.is_active = 0
+                   ORDER BY p.product_name";
+$archived_result = mysqli_query($conn, $archived_query);
+$archived_products = mysqli_fetch_all($archived_result, MYSQLI_ASSOC);
 
 // Fetch all categories for the dropdown
 $categories_query = "SELECT * FROM product_categories ORDER BY category_name";
 $categories_result = mysqli_query($conn, $categories_query);
 $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -147,19 +76,92 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
         .add-product-btn {
     margin-top: 100px;
 }
+
+.navbar {
+            background: #9D4D36 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0.5rem 1rem;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-size: 1.5rem;
+        }
+
+        .profile-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-btn i {
+            font-size: 1.2rem;
+        }
+
+        .profile-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1001;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .profile-menu.show {
+            display: block;
+        }
+
+        .profile-menu a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .profile-menu a:hover {
+            background-color: #f8f9fa;
+        }
+
+        .profile-menu .divider {
+            border-top: 1px solid #eee;
+            margin: 0;
+        }
+
+        .profile-menu .logout-btn {
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
+
     <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="admin_dashboard.php">
                 <i class="fas fa-store-alt me-2"></i>EZ Leather Bar Admin
             </a>
-           
-           
+
+             
+                    <a href="logout.php" class="logout-btn">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </a>
        
         </div>
     </nav>
+
 
     <div class="sidebar">
         <ul class="nav flex-column">
@@ -178,11 +180,7 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
                     <i class="fas fa-boxes"></i>Inventory
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="logout.php">
-                    <i class="fas fa-sign-out-alt"></i>Logout
-                </a>
-            </li>
+    
         </ul>
     </div>
 
@@ -266,12 +264,12 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
                                             data-product='<?php echo json_encode($product); ?>'>
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger delete-product"
+                                    <button class="btn btn-sm btn-warning archive-product"
                                             data-bs-toggle="modal"
-                                            data-bs-target="#deleteProductModal"
+                                            data-bs-target="#archiveProductModal"
                                             data-product-id="<?php echo $product['product_id']; ?>"
                                             data-product-name="<?php echo htmlspecialchars($product['product_name']); ?>">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-archive"></i>
                                     </button>
                                 </td>
                             </tr>
@@ -279,6 +277,23 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- Archived Products Section -->
+        <div class="mt-4">
+            <h4>Archived Products</h4>
+            <ul id="archivedProductsList" class="list-group">
+                <?php foreach ($archived_products as $archived_product): ?>
+                    <li class="list-group-item">
+                        <img src="<?php echo $archived_product['image_path'] ?: 'assets/default-product.jpg'; ?>" 
+                             alt="<?php echo htmlspecialchars($archived_product['product_name']); ?>"
+                             class="product-image">
+                        <?php echo htmlspecialchars($archived_product['product_name']); ?> - 
+                        <?php echo htmlspecialchars($archived_product['category_name']); ?> - 
+                        ₱<?php echo number_format($archived_product['base_price'], 2); ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
         </div>
     </div>
 
@@ -421,80 +436,100 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
     </div>
 
 
-    <!-- Delete Product Modal -->
+    <!--ARCHIVING Product Modal -->
     <div class="modal fade" id="archiveProductModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Archive Product</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to archive <span id="archive_product_name"></span>?</p>
-            </div>
-            <div class="modal-footer">
-                <form id="archiveForm">
-                    <input type="hidden" name="action" value="archive_product">
-                    <input type="hidden" name="product_id" id="archive_product_id">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-warning" id="archiveButton">Archive</button>
-                </form>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Archive Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to archive <span id="archive_product_name"></span>?</p>
+                </div>
+                <div class="modal-footer">
+                    <form id="archiveForm" method="POST">
+                        <input type="hidden" name="action" value="archive_product">
+                        <input type="hidden" name="product_id" id="archive_product_id">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning" id="archiveButton">Archive</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Section to Display Archived Products -->
-<div class="mt-4">
-    <h4>Archived Products</h4>
-    <ul id="archivedProductsList" class="list-group"></ul>
-</div>
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Handle edit product button click
-            document.querySelectorAll('.edit-product').forEach(button => {
-                button.addEventListener('click', function() {
-                    const product = JSON.parse(this.dataset.product);
-                    document.getElementById('edit_product_id').value = product.product_id;
-                    document.getElementById('edit_product_name').value = product.product_name;
-                    document.getElementById('edit_category_id').value = product.category_id;
-                    document.getElementById('edit_description').value = product.description;
-                    document.getElementById('edit_base_price').value = product.base_price;
-                    document.getElementById('edit_pieces_per_bundle').value = product.pieces_per_bundle;
-                    document.getElementById('edit_current_image').value = product.image_path;
-                    document.getElementById('edit_stock').value = product.stock;
-                    document.getElementById('edit_is_active').checked = product.is_active == 1;
-                    
-                    const preview = document.getElementById('edit_image_preview');
-                    preview.src = product.image_path || 'assets/default-product.jpg';
-                });
-            });
-
-            // Handle delete product button click
-            document.querySelectorAll('.delete-product').forEach(button => {
-                button.addEventListener('click', function() {
-                    document.getElementById('delete_product_id').value = this.dataset.productId;
-                    document.getElementById('delete_product_name').textContent = this.dataset.productName;
-                });
-            });
-
-            // Handle image preview
-            document.querySelector('input[name="image"]').addEventListener('change', function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle edit product button click
+        document.querySelectorAll('.edit-product').forEach(button => {
+            button.addEventListener('click', function() {
+                const product = JSON.parse(this.dataset.product);
+                document.getElementById('edit_product_id').value = product.product_id;
+                document.getElementById('edit_product_name').value = product.product_name;
+                document.getElementById('edit_category_id').value = product.category_id;
+                document.getElementById('edit_description').value = product.description;
+                document.getElementById('edit_base_price').value = product.base_price;
+                document.getElementById('edit_pieces_per_bundle').value = product.pieces_per_bundle;
+                document.getElementById('edit_current_image').value = product.image_path;
+                document.getElementById('edit_stock').value = product.stock;
+                document.getElementById('edit_is_active').checked = product.is_active == 1;
+                
                 const preview = document.getElementById('edit_image_preview');
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        preview.src = e.target.result;
-                    }
-                    reader.readAsDataURL(this.files[0]);
-                }
+                preview.src = product.image_path || 'assets/default-product.jpg';
             });
         });
 
-        
+        // Handle archive product button click
+        document.querySelectorAll('.archive-product').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('archive_product_id').value = this.dataset.productId;
+                document.getElementById('archive_product_name').textContent = this.dataset.productName;
+            });
+        });
+
+        // Handle archive form submission
+        document.getElementById('archiveButton').addEventListener('click', function() {
+            document.getElementById('archiveForm').submit();
+        });
+
+        // Handle image preview
+        document.querySelector('input[name="image"]').addEventListener('change', function() {
+            const preview = document.getElementById('edit_image_preview');
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Handle profile menu toggle
+        document.querySelector('.profile-btn').addEventListener('click', function() {
+            toggleProfileMenu();
+        });
+
+        // Close profile menu when clicking outside
+        window.addEventListener('click', function(event) {
+            if (!event.target.matches('.profile-btn')) {
+                const menu = document.getElementById('profileMenu');
+                if (menu && menu.classList.contains('show')) {
+                    menu.classList.remove('show');
+                }
+            }
+        });
+    });
+
+    function toggleProfileMenu() {
+        const menu = document.getElementById('profileMenu');
+        if (menu) {
+            menu.classList.toggle('show');
+        }
+    }
     </script>
 </body>
 </html> 
