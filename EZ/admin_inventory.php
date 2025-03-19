@@ -142,132 +142,11 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
     <title>Inventory Management - EZ Leather Bar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/inventory.css">
     <style>
-        body {
-            background: #f8f9fa;
-            font-family: 'Arial', sans-serif;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 250px;
-            background: #9D4D36;
-            padding-top: 80px;
-            z-index: 1000;
-        }
-
-        .sidebar .nav-link {
-            color: white;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            transition: all 0.3s;
-        }
-
-        .sidebar .nav-link:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            width: 20px;
-        }
-
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-
-        .navbar {
-            background: #9D4D36 !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .navbar-brand, .nav-link {
-            color: white !important;
-        }
-
-        .main-container {
-            margin-top: 80px;
-            padding: 20px;
-        }
-
-        .inventory-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .product-image {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 5px;
-        }
-
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-        }
-
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .modal-content {
-            border-radius: 15px;
-        }
-
-        .modal-header {
-            background: #9D4D36;
-            color: white;
-            border-radius: 15px 15px 0 0;
-        }
-
-        .preview-image {
-            max-width: 200px;
-            max-height: 200px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-
-        .stock-badge {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-        }
-
-        .stock-high {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .stock-medium {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .stock-low {
-            background: #f8d7da;
-            color: #721c24;
-        }
+        .add-product-btn {
+    margin-top: 100px;
+}
     </style>
 </head>
 <body>
@@ -276,33 +155,9 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
             <a class="navbar-brand" href="admin_dashboard.php">
                 <i class="fas fa-store-alt me-2"></i>EZ Leather Bar Admin
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin_dashboard.php">
-                            <i class="fas fa-chart-line me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin_bookings.php">
-                            <i class="fas fa-calendar-check me-1"></i>Bookings
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="admin_inventory.php">
-                            <i class="fas fa-boxes me-1"></i>Inventory
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="logout.php">
-                            <i class="fas fa-sign-out-alt me-1"></i>Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
+           
+           
+       
         </div>
     </nav>
 
@@ -334,9 +189,9 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-boxes me-2"></i>Inventory Management</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                <i class="fas fa-plus me-2"></i>Add New Product
-            </button>
+            <button class="btn btn-primary add-product-btn" data-bs-toggle="modal" data-bs-target="#addProductModal">
+    <i class="fas fa-plus me-2"></i>Add New Product
+</button>
         </div>
 
         <?php if (isset($_SESSION['success_message'])): ?>
@@ -559,33 +414,42 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">Update Product</button>
                     </div>
+                    
                 </form>
             </div>
         </div>
     </div>
 
+
     <!-- Delete Product Modal -->
-    <div class="modal fade" id="deleteProductModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete Product</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete <span id="delete_product_name"></span>?</p>
-                </div>
-                <div class="modal-footer">
-                    <form action="" method="POST">
-                        <input type="hidden" name="action" value="delete_product">
-                        <input type="hidden" name="product_id" id="delete_product_id">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </div>
+    <div class="modal fade" id="archiveProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Archive Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to archive <span id="archive_product_name"></span>?</p>
+            </div>
+            <div class="modal-footer">
+                <form id="archiveForm">
+                    <input type="hidden" name="action" value="archive_product">
+                    <input type="hidden" name="product_id" id="archive_product_id">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="archiveButton">Archive</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Section to Display Archived Products -->
+<div class="mt-4">
+    <h4>Archived Products</h4>
+    <ul id="archivedProductsList" class="list-group"></ul>
+</div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -629,6 +493,13 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
                 }
             });
         });
+
+        
     </script>
 </body>
 </html> 
+
+
+
+
+
