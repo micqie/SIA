@@ -32,6 +32,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['error_message'] = "Error archiving product: " . $stmt->error;
                 }
                 break;
+
+            case 'return_product':
+                $product_id = intval($_POST['product_id']);
+                $query = "UPDATE products SET is_active = 1 WHERE product_id = ?";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param('i', $product_id);
+                
+                if ($stmt->execute()) {
+                    $_SESSION['success_message'] = "Product returned successfully!";
+                } else {
+                    $_SESSION['error_message'] = "Error returning product: " . $stmt->error;
+                }
+                break;
         }
         
         // Redirect to prevent form resubmission
@@ -63,6 +76,7 @@ $categories_query = "SELECT * FROM product_categories ORDER BY category_name";
 $categories_result = mysqli_query($conn, $categories_query);
 $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -279,23 +293,54 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
             </div>
         </div>
 
-        <!-- Archived Products Section -->
+               <!-- Archived Products Section -->
         <div class="mt-4">
             <h4>Archived Products</h4>
             <ul id="archivedProductsList" class="list-group">
                 <?php foreach ($archived_products as $archived_product): ?>
-                    <li class="list-group-item">
-                        <img src="<?php echo $archived_product['image_path'] ?: 'assets/default-product.jpg'; ?>" 
-                             alt="<?php echo htmlspecialchars($archived_product['product_name']); ?>"
-                             class="product-image">
-                        <?php echo htmlspecialchars($archived_product['product_name']); ?> - 
-                        <?php echo htmlspecialchars($archived_product['category_name']); ?> - 
-                        ₱<?php echo number_format($archived_product['base_price'], 2); ?>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <img src="<?php echo $archived_product['image_path'] ?: 'assets/default-product.jpg'; ?>" 
+                                 alt="<?php echo htmlspecialchars($archived_product['product_name']); ?>"
+                                 class="product-image">
+                            <?php echo htmlspecialchars($archived_product['product_name']); ?> - 
+                            <?php echo htmlspecialchars($archived_product['category_name']); ?> - 
+                            ₱<?php echo number_format($archived_product['base_price'], 2); ?>
+                        </div>
+                        <button class="btn btn-sm btn-success return-product"
+                                data-bs-toggle="modal"
+                                data-bs-target="#returnProductModal"
+                                data-product-id="<?php echo $archived_product['product_id']; ?>"
+                                data-product-name="<?php echo htmlspecialchars($archived_product['product_name']); ?>">
+                            <i class="fas fa-undo"></i> Return
+                        </button>
                     </li>
                 <?php endforeach; ?>
             </ul>
         </div>
-    </div>
+        
+        <!-- Return Product Modal -->
+        <div class="modal fade" id="returnProductModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Return Product</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to return <span id="return_product_name"></span> to active products?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <form id="returnForm" method="POST">
+                            <input type="hidden" name="action" value="return_product">
+                            <input type="hidden" name="product_id" id="return_product_id">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success" id="returnButton">Return</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <!-- Add Product Modal -->
     <div class="modal fade" id="addProductModal" tabindex="-1">
@@ -448,12 +493,14 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
                     <p>Are you sure you want to archive <span id="archive_product_name"></span>?</p>
                 </div>
                 <div class="modal-footer">
-                    <form id="archiveForm" method="POST">
-                        <input type="hidden" name="action" value="archive_product">
-                        <input type="hidden" name="product_id" id="archive_product_id">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-warning" id="archiveButton">Archive</button>
-                    </form>
+                <form id="archiveForm" method="POST">
+    <input type="hidden" name="action" value="archive_product">
+    <input type="hidden" name="product_id" id="archive_product_id">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-warning" id="archiveButton">Archive</button>
+</form>
+
+
                 </div>
             </div>
         </div>
@@ -462,75 +509,88 @@ $categories = mysqli_fetch_all($categories_result, MYSQLI_ASSOC);
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle edit product button click
-        document.querySelectorAll('.edit-product').forEach(button => {
-            button.addEventListener('click', function() {
-                const product = JSON.parse(this.dataset.product);
-                document.getElementById('edit_product_id').value = product.product_id;
-                document.getElementById('edit_product_name').value = product.product_name;
-                document.getElementById('edit_category_id').value = product.category_id;
-                document.getElementById('edit_description').value = product.description;
-                document.getElementById('edit_base_price').value = product.base_price;
-                document.getElementById('edit_pieces_per_bundle').value = product.pieces_per_bundle;
-                document.getElementById('edit_current_image').value = product.image_path;
-                document.getElementById('edit_stock').value = product.stock;
-                document.getElementById('edit_is_active').checked = product.is_active == 1;
-                
-                const preview = document.getElementById('edit_image_preview');
-                preview.src = product.image_path || 'assets/default-product.jpg';
-            });
-        });
-
-        // Handle archive product button click
-        document.querySelectorAll('.archive-product').forEach(button => {
-            button.addEventListener('click', function() {
-                document.getElementById('archive_product_id').value = this.dataset.productId;
-                document.getElementById('archive_product_name').textContent = this.dataset.productName;
-            });
-        });
-
-        // Handle archive form submission
-        document.getElementById('archiveButton').addEventListener('click', function() {
-            document.getElementById('archiveForm').submit();
-        });
-
-        // Handle image preview
-        document.querySelector('input[name="image"]').addEventListener('change', function() {
-            const preview = document.getElementById('edit_image_preview');
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Handle edit product button click
+                    document.querySelectorAll('.edit-product').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const product = JSON.parse(this.dataset.product);
+                            document.getElementById('edit_product_id').value = product.product_id;
+                            document.getElementById('edit_product_name').value = product.product_name;
+                            document.getElementById('edit_category_id').value = product.category_id;
+                            document.getElementById('edit_description').value = product.description;
+                            document.getElementById('edit_base_price').value = product.base_price;
+                            document.getElementById('edit_pieces_per_bundle').value = product.pieces_per_bundle;
+                            document.getElementById('edit_current_image').value = product.image_path;
+                            document.getElementById('edit_stock').value = product.stock;
+                            document.getElementById('edit_is_active').checked = product.is_active == 1;
+                            
+                            const preview = document.getElementById('edit_image_preview');
+                            preview.src = product.image_path || 'assets/default-product.jpg';
+                        });
+                    });
+            
+                    // Handle archive product button click
+                    document.querySelectorAll('.archive-product').forEach(button => {
+                        button.addEventListener('click', function() {
+                            document.getElementById('archive_product_id').value = this.dataset.productId;
+                            document.getElementById('archive_product_name').textContent = this.dataset.productName;
+                        });
+                    });
+            
+                    // Handle archive form submission
+                    document.getElementById('archiveButton').addEventListener('click', function() {
+                        document.getElementById('archiveForm').submit();
+                    });
+            
+                    // Handle return product button click
+                    document.querySelectorAll('.return-product').forEach(button => {
+                        button.addEventListener('click', function() {
+                            document.getElementById('return_product_id').value = this.dataset.productId;
+                            document.getElementById('return_product_name').textContent = this.dataset.productName;
+                        });
+                    });
+            
+                    // Handle return form submission
+                    document.getElementById('returnButton').addEventListener('click', function() {
+                        document.getElementById('returnForm').submit();
+                    });
+            
+                    // Handle image preview
+                    document.querySelector('input[name="image"]').addEventListener('change', function() {
+                        const preview = document.getElementById('edit_image_preview');
+                        if (this.files && this.files[0]) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                preview.src = e.target.result;
+                            }
+                            reader.readAsDataURL(this.files[0]);
+                        }
+                    });
+            
+                    // Handle profile menu toggle
+                    document.querySelector('.profile-btn').addEventListener('click', function() {
+                        toggleProfileMenu();
+                    });
+            
+                    // Close profile menu when clicking outside
+                    window.addEventListener('click', function(event) {
+                        if (!event.target.matches('.profile-btn')) {
+                            const menu = document.getElementById('profileMenu');
+                            if (menu && menu.classList.contains('show')) {
+                                menu.classList.remove('show');
+                            }
+                        }
+                    });
+                });
+            
+                function toggleProfileMenu() {
+                    const menu = document.getElementById('profileMenu');
+                    if (menu) {
+                        menu.classList.toggle('show');
+                    }
                 }
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-
-        // Handle profile menu toggle
-        document.querySelector('.profile-btn').addEventListener('click', function() {
-            toggleProfileMenu();
-        });
-
-        // Close profile menu when clicking outside
-        window.addEventListener('click', function(event) {
-            if (!event.target.matches('.profile-btn')) {
-                const menu = document.getElementById('profileMenu');
-                if (menu && menu.classList.contains('show')) {
-                    menu.classList.remove('show');
-                }
-            }
-        });
-    });
-
-    function toggleProfileMenu() {
-        const menu = document.getElementById('profileMenu');
-        if (menu) {
-            menu.classList.toggle('show');
-        }
-    }
-    </script>
+            </script>
 </body>
 </html> 
 
